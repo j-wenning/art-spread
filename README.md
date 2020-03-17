@@ -1,6 +1,6 @@
 # ART SPREAD
 
-#### A webapp for artists looking to consistently upload to all media platforms
+#### A webapp for artists looking to consistently upload to all social media platforms
 
 ## Important Links
 * [MeisterTask](https://www.meistertask.com/app/project/88Cw0S4I/art-spread)
