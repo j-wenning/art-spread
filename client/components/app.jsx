@@ -36,12 +36,13 @@ export default class App extends React.Component {
     // return this.state.isLoading
     //   ? <h1>Testing connections...</h1>
     //   : <h1>{ this.state.message.toUpperCase() }</h1>;
+    const setView = this.setView;
     const viewName = this.state.view.name;
     if (viewName === 'login') {
       return (
         <div className='container-fluid background d-flex justify-content-center
         align-items-center w-100 vh-100'>
-          <Login />
+          <Login setView={setView} />
         </div>
       );
     }
