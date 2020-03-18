@@ -1,0 +1,19 @@
+.background {
+  background-color: #E5E5E5;
+}
+
+.generalText {
+  color: #690000;
+  font-family: Poiret One;
+}
+
+.loginHeader {
+ font-size: 57px;
+ line-height: 112px;
+}
+
+.loginButton {
+  font-size: 25px;
+  border-style: solid;
+  border-color: grey;
+}
