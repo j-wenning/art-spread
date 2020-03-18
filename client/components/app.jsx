@@ -25,13 +25,14 @@ export default class App extends React.Component {
   render() {
     const setView = this.setView;
     const viewName = this.state.view.name;
-    if (viewName === 'login') {
-      return (
-        <div className='container-fluid background d-flex justify-content-center
+    switch (viewName) {
+      case 'login':
+        return (
+          <div className='container-fluid background d-flex justify-content-center
         align-items-center w-100 vh-100'>
-          <Login setView={setView} />
-        </div>
-      );
+            <Login setView={setView} />
+          </div>
+        );
     }
   }
 }
