@@ -1,4 +1,4 @@
-@import url(./assets/fonts/fonts.css);
+@import url(./assets/css/fonts.css);
 
 body {
   margin: 0;
@@ -30,6 +30,10 @@ h1 {
   box-shadow: 0 4px 4px 1px rgba(0,0,0,.25);
 }
 
+.text-custom-primary:hover {
+  color: rgb(161, 39, 39);
+}
+
 .text-custom-primary {
   color: rgb(105, 0, 0);
 }
@@ -45,4 +49,8 @@ h1 {
 .profile {
   border-radius: 50%;
   border: 2px solid rgb(73, 73, 105);
+}
+
+.brand {
+  font-family: "PoiretOne";
 }

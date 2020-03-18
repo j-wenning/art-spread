@@ -1,38 +1,42 @@
 import React from 'react';
 import Dashboard from './dashboard';
 import Header from './header';
+import Login from './login';
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    // this.state = {
-    //   message: null,
-    //   isLoading: true
-    // };
     this.state = {
-      view: 'dashboard',
-      props: {}
+      view: {
+        name: 'login',
+        params: {}
+      }
     };
+    this.setView = this.setView.bind(this);
   }
 
-  // componentDidMount() {
-  //   fetch('/api/health-check')
-  //     .then(res => res.json())
-  //     .then(data => this.setState({ message: data.message || data.error }))
-  //     .catch(err => this.setState({ message: err.message }))
-  //     .finally(() => this.setState({ isLoading: false }));
-  // }
+  setView(name, params) {
+    this.setState({
+      view: {
+        name: name,
+        params
+      }
+    });
+  }
 
   render() {
-    // return this.state.isLoading
-    //   ? <h1>Testing connections...</h1>
-    //   : <h1>{ this.state.message.toUpperCase() }</h1>;
-    return (
-      <div className="app">
-        <Header title={this.state.view}/>
-        <Dashboard/>
-      </div>
-
-    );
+    switch (this.state.view.name) {
+      case 'login':
+        return (
+          <Login setView={(name, params) => this.setView(name, params)} />
+        );
+      case 'dashboard':
+        return (
+          <div className="app">
+            <Header title={this.state.view.name} />
+            <Dashboard />
+          </div>
+        );
+    }
   }
 }
