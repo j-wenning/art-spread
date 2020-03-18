@@ -1,13 +1,12 @@
 import React from 'react';
-import Background from './background';
 import Login from './login';
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      message: null,
-      isLoading: true,
+      // message: null,
+      // isLoading: true,
       view: {
         name: 'login',
         params: {}
@@ -25,13 +24,13 @@ export default class App extends React.Component {
     });
   }
 
-  componentDidMount() {
-    fetch('/api/health-check')
-      .then(res => res.json())
-      .then(data => this.setState({ message: data.message || data.error }))
-      .catch(err => this.setState({ message: err.message }))
-      .finally(() => this.setState({ isLoading: false }));
-  }
+  // componentDidMount() {
+  //   fetch('/api/health-check')
+  //     .then(res => res.json())
+  //     .then(data => this.setState({ message: data.message || data.error }))
+  //     .catch(err => this.setState({ message: err.message }))
+  //     .finally(() => this.setState({ isLoading: false }));
+  // }
 
   render() {
     // return this.state.isLoading
@@ -40,8 +39,8 @@ export default class App extends React.Component {
     const viewName = this.state.view.name;
     if (viewName === 'login') {
       return (
-        <div>
-          <Background />
+        <div className='container-fluid background d-flex justify-content-center
+        align-items-center w-100 vh-100'>
           <Login />
         </div>
       );
