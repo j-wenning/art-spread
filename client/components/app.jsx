@@ -1,5 +1,6 @@
 import React from 'react';
 import Login from './login';
+import CreatePost from './create-post';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -31,6 +32,13 @@ export default class App extends React.Component {
           <div className='container-fluid background d-flex justify-content-center
         align-items-center w-100 vh-100'>
             <Login setView={setView} />
+          </div>
+        );
+      case 'createPost':
+        return (
+          <div className='container-fluid background d-flex justify-content-center
+        align-items-center w-100 vh-100'>
+            <CreatePost setView={setView} />
           </div>
         );
     }
