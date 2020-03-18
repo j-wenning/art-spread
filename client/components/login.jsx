@@ -15,7 +15,8 @@ class Login extends React.Component {
       <div className='d-flex justify-content-center flex-column align-items-center
       text-center'>
         <h1 className='mb-5 generalText loginHeader'>Art Spread</h1>
-        <button onClick={this.goToDashboard} className='mb-5 generalText w-50 rounded-lg loginButton'>
+        <button onClick={this.goToDashboard} className='mb-5 generalText w-50
+        font-weight-bolder rounded-lg loginButton'>
           Sign In
         </button>
       </div>
