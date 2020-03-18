@@ -7,7 +7,7 @@ export default class App extends React.Component {
     super(props);
     this.state = {
       view: {
-        name: 'login',
+        name: 'createPost',
         params: {}
       }
     };
@@ -36,8 +36,7 @@ export default class App extends React.Component {
         );
       case 'createPost':
         return (
-          <div className='container-fluid background d-flex justify-content-center
-        align-items-center w-100 vh-100'>
+          <div className='container background d-flex w-100 vh-100'>
             <CreatePost setView={setView} />
           </div>
         );
