@@ -3,16 +3,16 @@
 body {
   margin: 0;
   background-color: rgb(250,248,243);
-  font: 600 36pt "Quicksand", Arial, Helvetica, sans-serif;
+  font-family: "Quicksand", Arial, Helvetica, sans-serif;
 }
 
 h1 {
-  font-size: 32pt !important;
+  font-size: 30pt !important;
 }
 
 .app {
   box-sizing: border-box;
-  width: 99%;
+  width: 95%;
   margin: 15px auto;
   padding: 10px 10px 15px;
   border-radius: 15px;
@@ -30,16 +30,20 @@ h1 {
   box-shadow: 0 4px 4px 1px rgba(0,0,0,.25);
 }
 
-.text-custom-primary:hover {
-  color: rgb(161, 39, 39);
-}
-
 .text-custom-primary {
   color: rgb(105, 0, 0);
 }
 
+.text-custom-primary:hover {
+  color: rgb(161, 39, 39);
+}
+
 .text-custom-secondary {
   color: rgb(73, 73, 105);
+}
+
+.text-custom-secondary:hover {
+  color: rgb(107, 107, 146);
 }
 
 .header {
@@ -47,10 +51,18 @@ h1 {
 }
 
 .profile {
-  border-radius: 50%;
+  border-radius: 100%;
   border: 2px solid rgb(73, 73, 105);
+  background-color: rgb(238, 238, 238);
+  height: 125px;
 }
 
 .brand {
   font-family: "PoiretOne";
+}
+
+.list {
+  height: 400px;
+  overflow: auto;
+  background-color: rgb(182, 182, 182);
 }
