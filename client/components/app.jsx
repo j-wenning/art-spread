@@ -34,7 +34,7 @@ export default class App extends React.Component {
       case 'dashboard':
         return (
           <div className="app">
-            <Header title={this.state.view.name} />
+            <Header setView={this.setView} title={this.state.view.name} />
             <Dashboard setView={this.setView}/>
           </div>
         );
