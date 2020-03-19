@@ -6,7 +6,8 @@ class CreatePost extends React.Component {
     this.state = {
       postBody: '',
       postTags: '',
-      post: null
+      post: null,
+      image: ''
     };
     this.goToViewPost = this.goToViewPost.bind(this);
   }
@@ -41,6 +42,29 @@ class CreatePost extends React.Component {
       });
   }
 
+  onChange(event) {
+    const files = event.target.files;
+    const reader = new FileReader();
+    reader.readAsDataURL(files[0]);
+    console.warn(event.target.result);
+    reader.onLoad = event => {
+      console.warn(event.target.result);
+    };
+
+  //   fetch('/api/', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify(post)
+  //   })
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       this.setState({
+  //         name: 'viewPost'
+  //       });
+  //     });
+  // }
+  }
+
   render() {
     return (
       <div className="w-100 d-flex align-items-center flex-column">
@@ -49,7 +73,12 @@ class CreatePost extends React.Component {
           className="d-flex justify-content-center w-100 align-items-center
         flex-column form" id={this.props.postId}
           onSubmit={this.handleSubmit}>
-          <input id="image-file" type="file" />
+          <label htmlFor="image-file" className="custom-file-upload btn btn-custom
+          text-custom-primary">
+            Upload image</label>
+          <input onChange={event => this.onChange(event)}
+            id="image-file" type="file" className="imageInput"/>
+
           <div className="w-100">
             <div className="text-custom-primary ml-1 mb-1 mt-1">
               Post body
