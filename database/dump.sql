@@ -348,6 +348,8 @@ COPY public.posts ("postId", "postLink", "poolId") FROM stdin;
 --
 
 COPY public.profiles ("profileId", "profileName", "avatarPath", "userId") FROM stdin;
+1	JoliDali	./public/images/sali	1
+2	Salvador_Dali	./public/images/dali	1
 \.
 
 
@@ -356,6 +358,7 @@ COPY public.profiles ("profileId", "profileName", "avatarPath", "userId") FROM s
 --
 
 COPY public.users ("userId", username, password) FROM stdin;
+1	salvador dali	clocks
 \.
 
 
@@ -391,14 +394,14 @@ SELECT pg_catalog.setval('public."posts_postId_seq"', 1, false);
 -- Name: profiles_profileId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."profiles_profileId_seq"', 1, false);
+SELECT pg_catalog.setval('public."profiles_profileId_seq"', 2, true);
 
 
 --
 -- Name: users_userId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."users_userId_seq"', 1, false);
+SELECT pg_catalog.setval('public."users_userId_seq"', 1, true);
 
 
 --

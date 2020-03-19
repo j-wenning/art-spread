@@ -13,8 +13,16 @@ app.use(sessionMiddleware);
 
 app.use(express.json());
 
-app.get('/api/health-check', (req, res, next) => {
-  db.query('select \'successfully connected\' as "message"')
+app.get('/api/user/:userId', (req, res, next) => {
+  const sql = `
+    select "u"."username",
+           "p"."profileName",
+           "p"."avatarPath"
+      from "profiles" as "p"
+      join "users" as "u" using ("userId")
+    where "p"."userId" = 1;
+  `;
+  db.query(sql)
     .then(result => res.json(result.rows[0]))
     .catch(err => next(err));
 });
