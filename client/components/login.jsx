@@ -8,7 +8,7 @@ class Login extends React.Component {
   render() {
     return (
       <div className="container-fluid flex-column">
-        <div className='row col-12 justify-content-center align-items-center vh-100'>
+        <div className='row justify-content-center align-items-center vh-100'>
           <div className="col-12 flex-column">
             <h1 className="mb-5 brand text-custom-primary text-center">Art Spread</h1>
             <div className="row justify-content-center">

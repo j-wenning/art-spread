@@ -15,6 +15,7 @@ export default class Dashboard extends React.Component {
         poolId: i
       }))
     };
+    this.goToCreatePost = this.goToCreatePost.bind(this);
   }
 
   getProfile() {
@@ -37,6 +38,10 @@ export default class Dashboard extends React.Component {
     this.getProfile();
   }
 
+  goToCreatePost() {
+    this.props.setView('createPost', {});
+  }
+
   render() {
     const pfp = this.state.profile.picture || './assets/images/default-profile.svg';
     const pfn = this.state.profile.name || 'profile';
@@ -48,7 +53,7 @@ export default class Dashboard extends React.Component {
             <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
               <button className="col btn btn-custom text-custom-primary mb-4">Modify Profile</button>
               <button className="col btn btn-custom text-custom-primary mb-4">Switch Profile</button>
-              <button className="col btn btn-custom text-custom-primary mb-4">Create Post</button>
+              <button onClick={this.goToCreatePost} className="col btn btn-custom text-custom-primary mb-4">Create Post</button>
             </div>
           </div>
           <div className="col-5">
