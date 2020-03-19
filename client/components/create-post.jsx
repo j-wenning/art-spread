@@ -16,17 +16,7 @@ class CreatePost extends React.Component {
   }
 
   handleChange(event) {
-    if (event.target.id === 'postBody') {
-      this.setState({
-        postBody: event.target.value
-      });
-    }
-
-    if (event.target.id === 'postTags') {
-      this.setState({
-        postTags: event.target.value
-      });
-    }
+    this.setState({ [event.target.id]: event.target.value });
   }
 
   handleSubmit(event) {
@@ -57,8 +47,7 @@ class CreatePost extends React.Component {
         <form
           className="d-flex justify-content-center w-100 align-items-center
         flex-column form" id={this.props.postId}
-          onSubmit={this.handleSubmit}
-        >
+          onSubmit={this.handleSubmit}>
           <div className="w-100">
             <div className="text-custom-primary ml-1 mb-1 mt-1">
               Post body

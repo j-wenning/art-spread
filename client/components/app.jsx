@@ -11,8 +11,7 @@ export default class App extends React.Component {
       view: {
         name: 'login',
         params: {}
-      },
-      comments: []
+      }
     };
     this.setView = this.setView.bind(this);
     this.makePost = this.makePost.bind(this);
@@ -36,8 +35,7 @@ export default class App extends React.Component {
       .then(response => response.json())
       .then(data => {
         this.setState({
-          name: 'viewPost',
-          comments: this.state.comments.concat(data)
+          name: 'viewPost'
         });
       });
   }
