@@ -50,7 +50,7 @@ h1 {
   border-bottom: 2px solid rgb(73, 73, 105);
 }
 
-.profile {
+.profile-picture {
   border-radius: 100%;
   border: 2px solid rgb(73, 73, 105);
   background-color: rgb(238, 238, 238);
@@ -62,7 +62,29 @@ h1 {
 }
 
 .list {
+  box-sizing: border-box;
   height: 400px;
-  overflow: auto;
+  padding: 1px 15px;
+  overflow-x: hidden;
+  overflow-y: scroll;
   background-color: rgb(182, 182, 182);
+}
+
+.post-preview {
+  margin: 10px 0;
+  padding: 10px 10px;
+  border-bottom: 2px solid rgb(73, 73, 105);
+}
+
+.preview-image {
+  border: 2px solid rgb(73, 73, 105);
+  background-color: rgb(238, 238, 238);
+  height: 100px;
+}
+
+.text-plate {
+  padding: 3px 10px;
+  margin: 5px 0;
+  border-radius: 15px;
+  background-color: rgb(238, 238, 238);
 }

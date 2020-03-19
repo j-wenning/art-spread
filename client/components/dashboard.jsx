@@ -9,7 +9,11 @@ export default class Dashboard extends React.Component {
         picture: null,
         name: null
       },
-      posts: []
+      posts: Array(15).fill(0).map((item, i) => ({
+        body: 'test',
+        tags: 'tttttttttttttttttttttttttttttttttttttttttttttttagtest',
+        poolId: i
+      }))
     };
   }
 
@@ -36,21 +40,23 @@ export default class Dashboard extends React.Component {
   render() {
     const pfp = this.state.profile.picture || './assets/images/default-profile.svg';
     const pfn = this.state.profile.name || 'profile';
-    const posts = this.state.posts.map((post, index) => <PostPreview key={index}/>);
+    const posts = this.state.posts.map(post => <PostPreview key={post.poolId} post={post}/>);
     return (
       <div>
         <div className="row">
-          <div className="col-6">
-            <button className="btn col-12 col-sm-6 col-md-4 col-lg-3 col btn-custom text-custom-primary mb-4">Modify Profile</button>
-            <button className="btn col-12 col-sm-6 col-md-4 col-lg-3 col btn-custom text-custom-primary mb-4">Switch Profile</button>
-            <button className="btn col-12 col-sm-6 col-md-4 col-lg-3 col btn-custom text-custom-primary mb-4">Create Post</button>
-          </div>
-          <div className="col-6">
-            <div className="col-12 d-flex justify-content-center">
-              <img className="profile" src={pfp} alt="avatar" />
+          <div className="col-7">
+            <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
+              <button className="col btn btn-custom text-custom-primary mb-4">Modify Profile</button>
+              <button className="col btn btn-custom text-custom-primary mb-4">Switch Profile</button>
+              <button className="col btn btn-custom text-custom-primary mb-4">Create Post</button>
             </div>
-            <h2 className="col-12 text-center text-custom-primary">{pfn}</h2>
-            <div className="col-12 row flex-row-reverse">
+          </div>
+          <div className="col-5">
+            <div className="col d-flex justify-content-center">
+              <img className="profile-picture" src={pfp} alt="" />
+            </div>
+            <h2 className="col text-center text-custom-primary">{pfn}</h2>
+            <div className="pr-0 ml-0 col row flex-row-reverse">
               <button className="btn btn-custom">
                 <i className="fas fa-cog fa-2x text-custom-secondary" />
               </button>
