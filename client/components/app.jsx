@@ -1,4 +1,6 @@
 import React from 'react';
+import Dashboard from './dashboard';
+import Header from './header';
 import Login from './login';
 
 export default class App extends React.Component {
@@ -23,14 +25,16 @@ export default class App extends React.Component {
   }
 
   render() {
-    const setView = this.setView;
-    const viewName = this.state.view.name;
-    switch (viewName) {
+    switch (this.state.view.name) {
       case 'login':
         return (
-          <div className='container-fluid background d-flex justify-content-center
-        align-items-center w-100 vh-100'>
-            <Login setView={setView} />
+          <Login setView={(name, params) => this.setView(name, params)} />
+        );
+      case 'dashboard':
+        return (
+          <div className="app">
+            <Header title={this.state.view.name} />
+            <Dashboard />
           </div>
         );
     }

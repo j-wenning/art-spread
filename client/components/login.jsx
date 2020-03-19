@@ -1,25 +1,25 @@
 import React from 'react';
 
 class Login extends React.Component {
-  constructor(props) {
-    super(props);
-    this.goToDashboard = this.goToDashboard.bind(this);
-  }
-
-  goToDashboard(event) {
+  goToDashboard() {
     this.props.setView('dashboard', {});
   }
 
   render() {
     return (
-      <div className='d-flex justify-content-center flex-column align-items-center
-      text-center'>
-        <h1 className='mb-5 generalText loginHeader'>Art Spread</h1>
-        <button onClick={this.goToDashboard} className='mb-5 generalText w-50
-        font-weight-bolder rounded-lg loginButton'>
-          Sign In
-        </button>
+      <div className="container-fluid flex-column">
+        <div className='row col-12 justify-content-center align-items-center vh-100'>
+          <div className="col-12 flex-column">
+            <h1 className="mb-5 brand text-custom-primary text-center">Art Spread</h1>
+            <div className="row justify-content-center">
+              <button onClick={() => this.goToDashboard()} className='btn btn-custom text-custom-primary w-50 font-weight-bolder rounded-lg'>
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
     );
   }
 }

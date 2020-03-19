@@ -1,19 +1,90 @@
-.background {
-  background-color: #E5E5E5;
+@import url(./assets/css/fonts.css);
+
+body {
+  margin: 0;
+  background-color: rgb(250,248,243);
+  font-family: "Quicksand", Arial, Helvetica, sans-serif;
 }
 
-.generalText {
-  color: #690000;
-  font-family: Poiret One;
+h1 {
+  font-size: 30pt !important;
 }
 
-.loginHeader {
- font-size: 57px;
- line-height: 112px;
+.app {
+  box-sizing: border-box;
+  width: 95%;
+  margin: 15px auto;
+  padding: 10px 10px 15px;
+  border-radius: 15px;
+  background-color: rgba(0,0,0,.15);
 }
 
-.loginButton {
-  font-size: 25px;
-  border-style: solid;
-  border-color: grey;
+.btn-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  border-radius: 15px;
+  border: 2px solid rgb(73, 73, 105);
+  background-color: rgb(238, 238, 238);
+  box-shadow: 0 4px 4px 1px rgba(0,0,0,.25);
+}
+
+.text-custom-primary {
+  color: rgb(105, 0, 0);
+}
+
+.text-custom-primary:hover {
+  color: rgb(161, 39, 39);
+}
+
+.text-custom-secondary {
+  color: rgb(73, 73, 105);
+}
+
+.text-custom-secondary:hover {
+  color: rgb(107, 107, 146);
+}
+
+.header {
+  border-bottom: 2px solid rgb(73, 73, 105);
+}
+
+.profile-picture {
+  border-radius: 100%;
+  border: 2px solid rgb(73, 73, 105);
+  background-color: rgb(238, 238, 238);
+  height: 125px;
+}
+
+.brand {
+  font-family: "PoiretOne";
+}
+
+.list {
+  box-sizing: border-box;
+  height: 400px;
+  padding: 1px 15px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  background-color: rgb(182, 182, 182);
+}
+
+.post-preview {
+  margin: 10px 0;
+  padding: 10px 10px;
+  border-bottom: 2px solid rgb(73, 73, 105);
+}
+
+.preview-image {
+  border: 2px solid rgb(73, 73, 105);
+  background-color: rgb(238, 238, 238);
+  height: 100px;
+}
+
+.text-plate {
+  padding: 3px 10px;
+  margin: 5px 0;
+  border-radius: 15px;
+  background-color: rgb(238, 238, 238);
 }
