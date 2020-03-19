@@ -36,7 +36,7 @@ export default class App extends React.Component {
         );
       case 'createPost':
         return (
-          <div className='container justify-content-center background d-flex w-100 vh-100'>
+          <div className='container-fluid justify-content-center background d-flex w-100 vh-100'>
             <CreatePost setView={setView} />
           </div>
         );

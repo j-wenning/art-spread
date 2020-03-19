@@ -8,10 +8,15 @@ class CreatePost extends React.Component {
       postTags: ''
     };
     this.goToDashboard = this.goToDashboard.bind(this);
+    this.goToViewPost = this.goToViewPost.bind(this);
   }
 
   goToDashboard(event) {
     this.props.setView('dashboard', {});
+  }
+
+  goToViewPost(event) {
+    this.props.setView('viewPost', {});
   }
 
   handleChange(event) {
@@ -45,10 +50,6 @@ class CreatePost extends React.Component {
   render() {
     return (
       <div className="w-100 d-flex align-items-center flex-column">
-        <nav className="d-flex justify-content-space-between navbar navbar-expand-lg navbar-light ">
-          <h2 className="font-weight-bolder generalText">Create Post</h2>
-          <h2 onClick={this.goToDashboard}>Back<i className="fas fa-arrow-left"></i></h2>
-        </nav>
         <form className="d-flex justify-content-center w-100 align-items-center
         flex-column form" onSubmit={this.handleSubmit}>
           <div className="w-100">
@@ -65,7 +66,7 @@ class CreatePost extends React.Component {
           </div>
           <div className="d-flex flex-row w-100 justify-content-end createPostButton">
             <button className="mt-3 mr-2 generalText btn-light font-weight-bolder rounded-lg loginButton"
-              onSubmit={this.handleSubmit}
+              onSubmit={this.handleSubmit} onClick={this.goToViewPost}
               type="submit" value="Submit">Create Post</button>
             <input className="mt-3 btn generalText font-weight-bolder
             rounded-lg loginButton" type="reset" value="Cancel" />
