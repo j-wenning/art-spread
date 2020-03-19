@@ -44,10 +44,12 @@ class CreatePost extends React.Component {
   render() {
     return (
       <div className="w-100 d-flex align-items-center flex-column">
-        <form
+        <form encType="multipart/form-data"
+          action="/upload/image" method="post"
           className="d-flex justify-content-center w-100 align-items-center
         flex-column form" id={this.props.postId}
           onSubmit={this.handleSubmit}>
+          <input id="image-file" type="file" />
           <div className="w-100">
             <div className="text-custom-primary ml-1 mb-1 mt-1">
               Post body
