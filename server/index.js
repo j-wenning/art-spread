@@ -14,7 +14,8 @@ app.use(sessionMiddleware);
 app.use(express.json());
 
 app.get('/api/profiles/:userId', (req, res, next) => {
-  const userId = req.params.userId;
+  const userId = Number(req.params.userId);
+  if (!userId) throw new ClientError('Requires userId', 400);
   if (userId < 1) throw new ClientError('Invalid userId.', 400);
   db.query(`
     SELECT "profileId"
@@ -39,7 +40,8 @@ app.get('/api/profiles/:userId', (req, res, next) => {
 });
 
 app.get('/api/profile/:profileId', (req, res, next) => {
-  const profileId = req.params.profileId;
+  const profileId = Number(req.params.profileId);
+  if (!profileId) throw new ClientError('Requires profileId', 400);
   if (profileId < 1) throw new ClientError('Invalid profileId.', 400);
   db.query(`
     SELECT "profileId",
