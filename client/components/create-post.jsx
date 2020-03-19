@@ -5,7 +5,8 @@ class CreatePost extends React.Component {
     super(props);
     this.state = {
       postBody: '',
-      postTags: ''
+      postTags: '',
+      post: null
     };
     this.goToViewPost = this.goToViewPost.bind(this);
   }
@@ -42,12 +43,20 @@ class CreatePost extends React.Component {
     event.currentTarget.reset();
   }
 
+  componentDidMount() {
+    fetch(`/api/r/art/${this.props.viewParams.postId}`)
+      .then(response => response.json())
+      .then(data => {
+        return this.setState({ post: data });
+      });
+  }
+
   render() {
     return (
       <div className="w-100 d-flex align-items-center flex-column">
         <form
           className="d-flex justify-content-center w-100 align-items-center
-        flex-column form"
+        flex-column form" id={this.props.postId}
           onSubmit={this.handleSubmit}
         >
           <div className="w-100">
@@ -78,7 +87,7 @@ class CreatePost extends React.Component {
             <button
               className="btn btn-custom text-custom-primary"
               onSubmit={this.handleSubmit}
-              onClick={this.goToViewPost}
+              onClick={() => this.props.makePost(this.state.post)}
               type="submit"
               value="Submit">
               Create post

@@ -11,9 +11,11 @@ export default class App extends React.Component {
       view: {
         name: 'login',
         params: {}
-      }
+      },
+      comments: []
     };
     this.setView = this.setView.bind(this);
+    this.makePost = this.makePost.bind(this);
   }
 
   setView(name, params) {
@@ -23,6 +25,21 @@ export default class App extends React.Component {
         params
       }
     });
+  }
+
+  makePost(post) {
+    fetch('/api/r/art', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(post)
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.setState({
+          name: 'viewPost',
+          comments: this.state.comments.concat(data)
+        });
+      });
   }
 
   render() {
@@ -42,7 +59,8 @@ export default class App extends React.Component {
         return (
           <div className="app">
             <Header setView={this.setView} title={this.state.view.name} />
-            <CreatePost setView={this.setView} />
+            <CreatePost makePost={this.makePost} setView={this.setView}
+              viewParams={this.state.view.params} />
           </div>
         );
     }
