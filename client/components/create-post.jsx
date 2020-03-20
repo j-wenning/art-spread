@@ -10,6 +10,9 @@ class CreatePost extends React.Component {
       image: ''
     };
     this.goToViewPost = this.goToViewPost.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.onChange = this.onChange.bind(this);
   }
 
   goToViewPost(event) {
@@ -35,7 +38,6 @@ class CreatePost extends React.Component {
     }).then(res => {
       console.warn(res);
     });
-
     this.props.sendPost(newSubmission);
     this.setState({
       postBody: '',
