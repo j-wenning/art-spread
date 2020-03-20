@@ -66,7 +66,7 @@ export default class App extends React.Component {
         return (
           <div className="app">
             <Header setView={this.setView} title={this.state.view.name} />
-            <Settings makePost={this.makePost} setView={this.setView} />
+            <Settings setView={this.setView} />
           </div>
         );
     }
