@@ -21,9 +21,9 @@ app.get('/api/user', (req, res, next) => {
     SELECT "userId"
       FROM "users"
      WHERE "username" = $1 AND "password" = $2;
-  `)
+  `, [username, password])
     .then(result => {
-      if (result.rows.length === 0) throw new ClientError('User does not exist', 404);
+      if (result.rows.length === 0) throw new ClientError('User does not exist.', 404);
       res.json(result.rows[0]);
     })
     .catch(err => next(err));
