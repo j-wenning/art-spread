@@ -139,6 +139,28 @@ app.delete('/api/post', (req, res, next) => {
     .catch(err => next(err));
 });
 
+// save post data. Front end can send post data to database.
+app.post('/api/posts', (req, res, next) => {
+  const { postId, postBody, postTags, profileId } = req.body;
+  const values = [postId, postBody, postTags, profileId];
+
+  const sql = ' ';
+  db.query(sql, values)
+    .then(result => res.json(result.rows[0]))
+    .catch(err => next(err));
+});
+
+// send associated accounts
+app.delete('/api/post', (req, res, next) => {
+  const { postId } = req.params;
+  const value = [postId];
+
+  const sql = ' ';
+  db.query(sql, value)
+    .then(result => res.json(result.rows[0]))
+    .catch(err => next(err));
+});
+
 app.use((err, req, res, next) => {
   if (err instanceof ClientError) {
     res.status(err.status).json({ error: err.message });
