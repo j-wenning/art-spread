@@ -52,7 +52,7 @@ app.get('/api/profile/:profileId', (req, res, next) => {
   `, [profileId])
     .then(result => {
       if (result.rows.length === 0) throw new ClientError('Profile does not exist.', 404);
-      res.json(result.rows);
+      res.json(result.rows[0]);
     })
     .catch(err => next(err));
 });
