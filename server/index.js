@@ -13,6 +13,22 @@ app.use(sessionMiddleware);
 
 app.use(express.json());
 
+app.get('/api/user', (req, res, next) => {
+  const { username, password } = req.body;
+  if (!username) throw new ClientError('Requires username', 400);
+  if (!password) throw new ClientError('Requires password', 400);
+  db.query(`
+    SELECT "userId"
+      FROM "users"
+     WHERE "username" = $1 AND "password" = $2;
+  `)
+    .then(result => {
+      if (result.rows.length === 0) throw new ClientError('User does not exist', 404);
+      res.json(result.rows[0]);
+    })
+    .catch(err => next(err));
+});
+
 app.get('/api/profiles/:userId', (req, res, next) => {
   const userId = Number(req.params.userId);
 
@@ -73,7 +89,7 @@ app.get('/api/posts/:profileId', (req, res, next) => {
   `, [postId, profileId, postCount])
     .then(result => {
       if (result.rows.length === 0) throw new ClientError('Posts do not exist.', 404);
-      res.json(result.rows);
+      res.json(result.rows || []);
     })
     .catch(err => next(err));
 });
