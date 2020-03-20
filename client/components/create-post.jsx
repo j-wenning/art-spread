@@ -6,9 +6,13 @@ class CreatePost extends React.Component {
     this.state = {
       postBody: '',
       postTags: '',
-      post: null
+      post: null,
+      image: ''
     };
     this.goToViewPost = this.goToViewPost.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleImage = this.handleImage.bind(this);
   }
 
   goToViewPost(event) {
@@ -25,6 +29,15 @@ class CreatePost extends React.Component {
       postBody: this.state.postBody,
       postTags: this.state.postTags
     };
+    const formData = new FormData();
+    formData.append('image', this.state.image);
+    fetch(`/api/r/art/${formData}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    }).then(res => {
+      console.warn(res);
+    });
     this.props.sendPost(newSubmission);
     this.setState({
       postBody: '',
@@ -41,13 +54,26 @@ class CreatePost extends React.Component {
       });
   }
 
+  handleImage(event) {
+    const files = event.target.files;
+    this.setState({
+      image: files[0]
+    });
+  }
+
   render() {
     return (
       <div className="w-100 d-flex align-items-center flex-column">
-        <form
+        <form encType="multipart/form-data"
           className="d-flex justify-content-center w-100 align-items-center
         flex-column form" id={this.props.postId}
           onSubmit={this.handleSubmit}>
+          <label htmlFor="image-file" className="custom-file-upload btn btn-custom
+          text-custom-primary">
+            Upload image</label>
+          <input handleImage={this.handleImage}
+            id="image-file" type="file" className="imageInput"/>
+
           <div className="w-100">
             <div className="text-custom-primary ml-1 mb-1 mt-1">
               Post body
