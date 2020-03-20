@@ -1,13 +1,14 @@
 import React from 'react';
-// import PostPreview from './post-preview';
+import AccountItem from './account-item';
 
-export default class Dashboard extends React.Component {
+export default class Settings extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      accounts: {
-        name: null
-      }
+      accounts: Array(15).fill(0).map((account, i) => ({
+        name: 'account name',
+        accountId: i
+      }))
     };
   }
 
@@ -45,7 +46,15 @@ export default class Dashboard extends React.Component {
           <div className="col">
             <h2 className="text-custom-primary">Accounts</h2>
             <div className="list overflow-auto">
-              account name
+              {this.state.accounts.map(account => {
+                return (
+                  <AccountItem
+                    key={account.accountId}
+                    name={account.name}
+                    id={account.accountId}
+                  />);
+              })
+              }
             </div>
           </div>
         </div>
