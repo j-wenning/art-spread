@@ -42,11 +42,11 @@ app.get('/api/profiles/:userId', (req, res, next) => {
 app.get('/api/profile/:profileId', (req, res, next) => {
   const profileId = Number(req.params.profileId);
   if (!profileId) throw new ClientError('Requires profileId', 400);
-  if (profileId < 1) throw new ClientError('Invalid profileId.', 400);
+  else if (profileId < 1) throw new ClientError('Invalid profileId.', 400);
   db.query(`
     SELECT "profileId",
            "name",
-           "imagePath"
+           "imgPath"
       FROM "profiles"
      WHERE "profileId" = $1;
   `, [profileId])
@@ -57,56 +57,32 @@ app.get('/api/profile/:profileId', (req, res, next) => {
     .catch(err => next(err));
 });
 
-// user can view post
-app.get('/api/posts', (req, res, next) => {
-  const { postId, profileId, postCount } = req.body;
-  const values = [postId, profileId, postCount];
-  let posts = [];
+app.get('/api/posts/:profileId', (req, res, next) => {
+  const postId = Number(req.body.postId);
+  const postCount = Number(req.body.postCount);
+  const profileId = Number(req.params.profileId);
 
-  if (!postId || !postCount || !profileId) {
-    res.status(400).json({
-      error: 'require post id, post count, and profile Id'
-    });
-  } else if (postId < 1 || postCount < 1 || profileId < 1) {
-    res.status(400).json({
-      error: 'invalid post id, post count, and profile Id'
-    });
-  }
-
-  const sql = `
-  SELECT "postId",
-  "postBody",
-  "postTags"
-  FROM "posts"
-  WHERE "postId" >= $1 AND "profileId" = $2
-  ORDER BY "postId" desc
-  LIMIT $3
-  `;
-
-  db.query(sql, values)
-    .then(data => {
-      posts = data.rows;
-      if (!posts) {
-        res.sendStatus(404);
-      } else {
-        const sql = `
-        SELECT "i"."imagePath", "i"."postId"
-        FROM "images" as "i"
-        JOIN "posts" using "i"."postId" as "p"
-        WHERE "i"."postId" >= $1 AND "p"."profileId" = $2`;
-        return db.query(sql);
-      }
+  if (!postId) throw new ClientError('Requires postId', 400);
+  else if (!postCount) throw new ClientError('Requires postCount', 400);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  else if (postId < 1) throw new ClientError('Invalid postId', 400);
+  else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
+  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
+  db.query(`
+      SELECT "postId",
+             "postBody",
+             "postTags",
+             "imgPath",
+        FROM "posts"
+       WHERE "postId" >= $1 AND "profileId" = $2
+    ORDER BY "postId" DESC
+       LIMIT $3;
+  `, [postId, profileId, postCount])
+    .then(result => {
+      if (result.rows.length === 0) throw new ClientError('Posts do not exist.', 404);
+      res.json(result);
     })
-    .then(data => {
-      res.status().json();
-    })
-    .catch(err => {
-    // eslint-disable-next-line no-console
-      console.log(err);
-      res.status(400).json({
-        error: 'an unexpected error occurred with get'
-      });
-    });
+    .catch(err => next(err));
 });
 
 // user can post profile data
