@@ -111,3 +111,15 @@ h1 {
 .custom-file-upload {
     cursor: pointer;
 }
+
+.post-body {
+  background-color: rgb(238, 238, 238);
+  height: 200px;
+  border-radius: 10px;
+}
+
+.post-tags {
+  background-color: rgb(238, 238, 238);
+  height: 60px;
+  border-radius: 10px;
+}
