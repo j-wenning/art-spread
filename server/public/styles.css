@@ -70,6 +70,15 @@ h1 {
   background-color: rgb(182, 182, 182);
 }
 
+.horizontal-list {
+  box-sizing: border-box;
+  height: 50px;
+  padding: 1px 15px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  background-color: rgb(182, 182, 182);
+}
+
 .post-preview {
   margin: 10px 0;
   padding: 10px 10px;
@@ -80,6 +89,12 @@ h1 {
   border: 2px solid rgb(73, 73, 105);
   background-color: rgb(238, 238, 238);
   height: 100px;
+}
+
+.preview-image-lg {
+  border: 2px solid rgb(73, 73, 105);
+  background-color: rgb(238, 238, 238);
+  height: 150px;
 }
 
 .text-plate {
