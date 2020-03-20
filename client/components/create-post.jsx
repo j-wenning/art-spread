@@ -12,7 +12,7 @@ class CreatePost extends React.Component {
     this.goToViewPost = this.goToViewPost.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.onChange = this.onChange.bind(this);
+    this.handleImage = this.handleImage.bind(this);
   }
 
   goToViewPost(event) {
@@ -54,7 +54,7 @@ class CreatePost extends React.Component {
       });
   }
 
-  onChange(event) {
+  handleImage(event) {
     const files = event.target.files;
     this.setState({
       image: files[0]
@@ -71,7 +71,7 @@ class CreatePost extends React.Component {
           <label htmlFor="image-file" className="custom-file-upload btn btn-custom
           text-custom-primary">
             Upload image</label>
-          <input onChange={this.onChange}
+          <input handleImage={this.handleImage}
             id="image-file" type="file" className="imageInput"/>
 
           <div className="w-100">
