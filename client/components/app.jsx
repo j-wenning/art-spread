@@ -3,6 +3,7 @@ import Dashboard from './dashboard';
 import Header from './header';
 import Login from './login';
 import CreatePost from './create-post';
+import Settings from './settings';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -59,6 +60,13 @@ export default class App extends React.Component {
             <Header setView={this.setView} title={this.state.view.name} />
             <CreatePost makePost={this.makePost} setView={this.setView}
               viewParams={this.state.view.params} />
+          </div>
+        );
+      case 'settings':
+        return (
+          <div className="app">
+            <Header setView={this.setView} title={this.state.view.name} />
+            <Settings makePost={this.makePost} setView={this.setView} />
           </div>
         );
     }
