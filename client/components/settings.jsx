@@ -26,7 +26,7 @@ export default class Dashboard extends React.Component {
   render() {
     return (
       <div>
-        <div className="row">
+        <div className="row d-flex justify-content-center">
           <div className="col-7">
             <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
               <button className="col btn btn-custom text-custom-primary mb-4">
@@ -36,24 +36,24 @@ export default class Dashboard extends React.Component {
                 Change Password
               </button>
               <button className="col btn btn-custom text-custom-primary mb-4">
-                Change Password
+                Add Account
               </button>
             </div>
           </div>
-          <div className="row">
-            <div className="col">
-              <h2 className="text-custom-primary">Accounts</h2>
-              <div className="list overflow-auto">
+        </div>
+        <div className="row">
+          <div className="col">
+            <h2 className="text-custom-primary">Accounts</h2>
+            <div className="list overflow-auto">
               account name
-              </div>
             </div>
           </div>
-          <div className="row">
-            <div className="mt-2 d-flex flex-row w-100 justify-content-center">
-              <button className="btn btn-custom text-custom-primary">
+        </div>
+        <div className="row">
+          <div className="mt-2 d-flex flex-row w-100 justify-content-center">
+            <button className="btn btn-custom text-custom-primary">
               Delete Art Spread account
-              </button>
-            </div>
+            </button>
           </div>
         </div>
       </div>
