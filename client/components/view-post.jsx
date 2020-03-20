@@ -1,10 +1,16 @@
 import React from 'react';
+import CommentItem from './comment-item';
 
 export default class ViewPost extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      analytics: null
+      analytics: null,
+      comments: Array(15).fill(0).map((item, i) => ({
+        commenter: 'commenter vanity',
+        commentBody: 'comment body',
+        commentId: i
+      }))
     };
   }
 
@@ -14,7 +20,7 @@ export default class ViewPost extends React.Component {
       .then(data => this.setState({ analytics: data }));
   }
 
-  getPosts() {
+  getPost() {
     fetch('/api/posts')
       .then(res => res.json())
       .then(data => {
@@ -22,11 +28,24 @@ export default class ViewPost extends React.Component {
       });
   }
 
+  getComments() {
+    fetch('/api/comments')
+      .then(res => res.json())
+      .then(data => {
+        this.setState({ comments: data });
+      });
+  }
+
   componentDidMount() {
-    this.getPosts();
+    this.getAnalytics();
+    this.getPost();
+    this.getComments();
   }
 
   render() {
+    const comments = this.state.comments.map(comment => <CommentItem
+      key={comment.commentId} commenter={comment.commenter}
+      commentBody={comment.commentBody} id={comment.commentId}/>);
     return (
       <div>
         <div className="d-flex justify-content-center">
@@ -64,6 +83,9 @@ export default class ViewPost extends React.Component {
           <div className="post-tags p-2 text-custom-primary ml-1 mb-1 mt-1">
             Post tags
           </div>
+        </div>
+        <div className="list overflow-auto">
+          {comments}
         </div>
       </div>
     );
