@@ -26,6 +26,16 @@ class CreatePost extends React.Component {
       postBody: this.state.postBody,
       postTags: this.state.postTags
     };
+    const formData = new FormData();
+    formData.append('image', this.state.image);
+    fetch(`/api/r/art/${formData}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    }).then(res => {
+      console.warn(res);
+    });
+
     this.props.sendPost(newSubmission);
     this.setState({
       postBody: '',
@@ -44,25 +54,9 @@ class CreatePost extends React.Component {
 
   onChange(event) {
     const files = event.target.files;
-    const reader = new FileReader();
-    reader.readAsDataURL(files[0]);
-    console.warn(event.target.result);
-    reader.onLoad = event => {
-      console.warn(event.target.result);
-    };
-
-  //   fetch('/api/', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify(post)
-  //   })
-  //     .then(response => response.json())
-  //     .then(data => {
-  //       this.setState({
-  //         name: 'viewPost'
-  //       });
-  //     });
-  // }
+    this.setState({
+      image: files[0]
+    });
   }
 
   render() {
@@ -76,7 +70,7 @@ class CreatePost extends React.Component {
           <label htmlFor="image-file" className="custom-file-upload btn btn-custom
           text-custom-primary">
             Upload image</label>
-          <input onChange={event => this.onChange(event)}
+          <input onChange={this.onChange}
             id="image-file" type="file" className="imageInput"/>
 
           <div className="w-100">
