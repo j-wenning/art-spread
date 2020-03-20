@@ -1,5 +1,7 @@
 require('dotenv/config');
 const express = require('express');
+var multer = require('multer');
+var path = require('path');
 
 const db = require('./database');
 const ClientError = require('./client-error');
@@ -12,6 +14,28 @@ app.use(staticMiddleware);
 app.use(sessionMiddleware);
 
 app.use(express.json());
+
+var storage = multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, './uploads');
+  },
+  filename: function (req, file, callback) {
+    callback(
+      null,
+      req.params.userId + '-' + Date.now() + '-' + file.fieldname + path.extname(file.originalname)
+    );
+  }
+});
+
+app.post('/api/posts/:userId', function (req, res) {
+  var upload = multer({ storage: storage }).single('test');
+  upload(req, res, function (err) {
+    if (err) {
+      return res.end('Error uploading file.');
+    }
+    res.end('File is uploaded');
+  });
+});
 
 app.get('/api/user', (req, res, next) => {
   const { username, password } = req.body;
