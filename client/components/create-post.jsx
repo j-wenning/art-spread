@@ -65,7 +65,6 @@ class CreatePost extends React.Component {
     return (
       <div className="w-100 d-flex align-items-center flex-column">
         <form encType="multipart/form-data"
-          action="/upload/image" method="post"
           className="d-flex justify-content-center w-100 align-items-center
         flex-column form" id={this.props.postId}
           onSubmit={this.handleSubmit}>
