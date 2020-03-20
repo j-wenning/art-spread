@@ -27,8 +27,8 @@ var storage = multer.diskStorage({
   }
 });
 
-app.post('/posts/:userId', function (req, res) {
-  var upload = multer({ storage: storage }).single('profile');
+app.post('/api/posts/:userId', function (req, res) {
+  var upload = multer({ storage: storage }).single('test');
   upload(req, res, function (err) {
     if (err) {
       return res.end('Error uploading file.');
