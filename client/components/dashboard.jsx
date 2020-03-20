@@ -16,6 +16,7 @@ export default class Dashboard extends React.Component {
       }))
     };
     this.goToCreatePost = this.goToCreatePost.bind(this);
+    this.goToSettings = this.goToSettings.bind(this);
   }
 
   getProfile() {
@@ -42,6 +43,10 @@ export default class Dashboard extends React.Component {
     this.props.setView('createPost', {});
   }
 
+  goToSettings() {
+    this.props.setView('settings', {});
+  }
+
   render() {
     const pfp = this.state.profile.picture || './assets/images/default-profile.svg';
     const pfn = this.state.profile.name || 'profile';
@@ -62,7 +67,7 @@ export default class Dashboard extends React.Component {
             </div>
             <h2 className="col text-center text-custom-primary">{pfn}</h2>
             <div className="pr-0 ml-0 col row flex-row-reverse">
-              <button className="btn btn-custom">
+              <button onClick={this.goToSettings} className="btn btn-custom">
                 <i className="fas fa-cog fa-2x text-custom-secondary" />
               </button>
             </div>
