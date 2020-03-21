@@ -123,3 +123,20 @@ h1 {
   height: 60px;
   border-radius: 10px;
 }
+
+.commenter {
+  background-color: rgb(238, 238, 238);
+  height: 40px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.comment-body {
+  background-color: rgb(238, 238, 238);
+  height: 100px;
+  border-radius: 10px;
+}
+
+.heart {
+  vertical-align: middle;
+}

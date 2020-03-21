@@ -4,10 +4,15 @@ export default class CommentItem extends React.Component {
 
   render() {
     return (
-      <div className="post-preview row col">
-        <div id={this.props.commentId} className="col-5">
-          <p className="text-custom-primary text-plate">{this.props.commenter}</p>
-          <p className="text-primary text-plate">{this.props.commentBody}</p>
+      <div className="post-preview">
+        <div id={this.props.commentId}>
+          <div className="w-75 p-2 mb-3 row text-custom-primary commenter">
+            {this.props.commenter}
+          </div>
+          <i className="ml-5 heart far fa-heart fa-2x"></i>
+          <div className="p-2 mb-3 text-custom-primary comment-body row">
+            {this.props.commentBody}
+          </div>
         </div>
       </div>
     );
