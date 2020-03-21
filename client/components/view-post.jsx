@@ -6,8 +6,9 @@ export default class ViewPost extends React.Component {
     super(props);
     this.state = {
       analytics: null,
-      comments: Array(15).fill(0).map((item, i) => ({
+      comments: Array(5).fill(0).map((item, i) => ({
         commenter: 'commenter vanity',
+        liked: false,
         commentBody: 'comment body',
         commentId: i
       }))
@@ -42,9 +43,15 @@ export default class ViewPost extends React.Component {
     this.getComments();
   }
 
+  // handleClick(commentId) {
+  //   const comm = this.state.comments.filter(comment => comment.commentId === commentId);
+  //   this.setState({ comments[]{liked: !comm.liked}})
+  // }
+
   render() {
     const comments = this.state.comments.map(comment => <CommentItem
       key={comment.commentId} commenter={comment.commenter}
+      like={() => this.handleClick(comment.commentId)} liked={comment.liked}
       commentBody={comment.commentBody} id={comment.commentId}/>);
     return (
       <div>
@@ -86,6 +93,11 @@ export default class ViewPost extends React.Component {
         </div>
         <div className="list overflow-auto">
           {comments}
+        </div>
+        <div className="mt-2 d-flex flex-row w-100 justify-content-center">
+          <button className="btn btn-custom text-custom-primary">
+            Delete post
+          </button>
         </div>
       </div>
     );

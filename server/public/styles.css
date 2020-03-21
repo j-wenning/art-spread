@@ -137,6 +137,12 @@ h1 {
   border-radius: 10px;
 }
 
-.heart {
+.unliked {
   vertical-align: middle;
+  color: black;
+}
+
+.liked {
+  vertical-align: middle;
+  color: red;
 }
