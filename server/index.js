@@ -30,7 +30,7 @@ app.use(sessionMiddleware);
 
 app.use(express.json());
 
-app.get('/api/user', (req, res, next) => {
+app.post('/api/user', (req, res, next) => {
   const { username, password } = req.body;
 
   if (!username) throw new ClientError('Requires username', 400);
@@ -43,6 +43,7 @@ app.get('/api/user', (req, res, next) => {
     .then(result => {
       if (result.rowCount === 0) throw new ClientError('User does not exist.', 404);
       req.session.userId = result.rows[0].userId;
+      res.status(200).send('Logged in successfully.');
     })
     .catch(err => next(err));
 });
