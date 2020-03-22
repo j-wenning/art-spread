@@ -34,7 +34,7 @@ app.get('/api/user', (req, res, next) => {
   const { username, password } = req.body;
 
   if (!username) throw new ClientError('Requires username', 400);
-  if (!password) throw new ClientError('Requires password', 400);
+  else if (!password) throw new ClientError('Requires password', 400);
   db.query(`
     SELECT "userId"
       FROM "users"
@@ -42,16 +42,15 @@ app.get('/api/user', (req, res, next) => {
   `, [username, password])
     .then(result => {
       if (result.rowCount === 0) throw new ClientError('User does not exist.', 404);
-      res.json(result.rows[0]);
+      req.session.userId = result.rows[0].userId;
     })
     .catch(err => next(err));
 });
 
 app.get('/api/profiles/:userId', (req, res, next) => {
-  const userId = Number(req.params.userId);
+  const userId = req.session.userId;
 
-  if (!userId && userId !== 0) throw new ClientError('Requires userId', 400);
-  if (userId < 1) throw new ClientError('Invalid userId.', 400);
+  if (!userId) throw new ClientError('Requires userId', 403);
   db.query(`
       SELECT "profileId",
              "name",
@@ -67,8 +66,12 @@ app.get('/api/profiles/:userId', (req, res, next) => {
 });
 
 app.get('/api/accounts/:profileId', (req, res, next) => {
+  const userId = req.session.userId;
   const profileId = Number(req.params.profileId);
 
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
+  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
   db.query(`
       SELECT "a"."accountId",
              "a"."name",
@@ -85,11 +88,13 @@ app.get('/api/accounts/:profileId', (req, res, next) => {
 });
 
 app.get('/api/posts/:profileId', (req, res, next) => {
+  const userId = req.session.userId;
   const postId = Number(req.body.postId);
   const postCount = Number(req.body.postCount);
   const profileId = Number(req.params.profileId);
 
-  if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
   else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
   else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
   else if (postId < 1) throw new ClientError('Invalid postId', 400);
@@ -113,11 +118,13 @@ app.get('/api/posts/:profileId', (req, res, next) => {
 });
 
 app.get('/api/publications/:profileId', (req, res, next) => {
+  const userId = req.session.userId;
   const postId = Number(req.body.postId);
   const postCount = Number(req.body.postCount);
   const profileId = req.params.profileId;
 
-  if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
   else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
   else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
   else if (postId < 1) throw new ClientError('Invalid postId', 400);
@@ -143,6 +150,9 @@ app.get('/api/publications/:profileId', (req, res, next) => {
 });
 
 app.post('/api/post/', (req, res, next) => {
+  const userId = req.session.userId;
+
+  if (!userId) throw new ClientError('Requires userId', 403);
   upload(req, res, err => {
     if (err) {
       if (err.code === 'LIMIT_UNEXPECTED_FILE') next(new ClientError('Unexpected file(s).', 400));
@@ -157,10 +167,9 @@ app.post('/api/post/', (req, res, next) => {
 });
 
 app.get('/api/account/reddit/request', (req, res, next) => {
-  const userId = req.body.userId;
+  const userId = req.session.userId;
 
-  if (!userId && userId !== 0) throw new ClientError('Requires userId', 400);
-  else if (userId < 1) throw new ClientError('Invalid userId', 400);
+  if (!userId) throw new ClientError('Requires userId', 403);
   res.redirect('https://www.reddit.com/api/v1/authorize?' +
     [
       'response_type=code',
@@ -173,11 +182,10 @@ app.get('/api/account/reddit/request', (req, res, next) => {
 });
 
 app.get('/api/account/reddit/authorize', (req, res, next) => {
-  const userId = req.body.userId;
+  const userId = req.session.userId;
   const account = {};
 
-  if (!userId && userId !== 0) throw new ClientError('Requires userId', 400);
-  else if (userId < 1) throw new ClientError('Invalid userId', 400);
+  if (!userId) throw new ClientError('Requires userId', 403);
   fetch('https://www.reddit.com/api/v1/access_token', {
     method: 'POST',
     headers: {
