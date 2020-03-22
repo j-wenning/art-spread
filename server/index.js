@@ -1,7 +1,5 @@
 require('dotenv/config');
 const express = require('express');
-var multer = require('multer');
-var path = require('path');
 
 const db = require('./database');
 const ClientError = require('./client-error');
@@ -10,32 +8,27 @@ const sessionMiddleware = require('./session-middleware');
 
 const app = express();
 
+const multer = require('multer');
+const path = require('path');
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, './database/images'),
+    filename: (req, file, cb) => cb(null,
+      `${Date.now()}-${req.body.profileId}-${Math.floor(Math.random() * 999)}${path.extname(file.originalname)}`
+    )
+  }),
+  fileFilter: (req, file, cb) => {
+    cb(null, Number(req.body.profileId) && req.body.profileId > 0);
+  }
+}).single('image');
+
+const fetch = require('node-fetch');
+
 app.use(staticMiddleware);
 app.use(sessionMiddleware);
 
 app.use(express.json());
-
-var storage = multer.diskStorage({
-  destination: function (req, file, callback) {
-    callback(null, './uploads');
-  },
-  filename: function (req, file, callback) {
-    callback(
-      null,
-      req.params.userId + '-' + Date.now() + '-' + file.fieldname + path.extname(file.originalname)
-    );
-  }
-});
-
-app.post('/api/posts/:userId', function (req, res) {
-  var upload = multer({ storage: storage }).single('test');
-  upload(req, res, function (err) {
-    if (err) {
-      return res.end('Error uploading file.');
-    }
-    res.end('File is uploaded');
-  });
-});
 
 app.get('/api/user', (req, res, next) => {
   const { username, password } = req.body;
@@ -48,7 +41,7 @@ app.get('/api/user', (req, res, next) => {
      WHERE "username" = $1 AND "password" = $2;
   `, [username, password])
     .then(result => {
-      if (result.rows.length === 0) throw new ClientError('User does not exist.', 404);
+      if (result.rowCount === 0) throw new ClientError('User does not exist.', 404);
       res.json(result.rows[0]);
     })
     .catch(err => next(err));
@@ -113,7 +106,7 @@ app.get('/api/posts/:profileId', (req, res, next) => {
        LIMIT $3;
   `, [postId, profileId, postCount])
     .then(result => {
-      if (result.rows.length === 0) throw new ClientError('Posts do not exist.', 404);
+      if (result.rowCount === 0) throw new ClientError('Posts do not exist.', 404);
       res.json(result.rows || []);
     })
     .catch(err => next(err));
@@ -146,6 +139,75 @@ app.get('/api/publications/:profileId', (req, res, next) => {
     ORDER BY "po"."postId", "pu"."publicationId" DESC;
   `, [postId, profileId, postCount])
     .then(result => res.json(result.rows || []))
+    .catch(err => next(err));
+});
+
+app.post('/api/post/', (req, res, next) => {
+  upload(req, res, err => {
+    if (err) {
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') next(new ClientError('Unexpected file(s).', 400));
+      else next(err);
+    } else {
+      const profileId = Number(req.body.profileId);
+      if (!profileId && profileId !== 0) next(new ClientError('Requires profileId.', 400));
+      else if (profileId < 1) next(new ClientError('Invalid profileId.', 400));
+      res.json(req.file);
+    }
+  });
+});
+
+app.get('/api/account/reddit/request', (req, res, next) => {
+  const userId = req.body.userId;
+
+  if (!userId && userId !== 0) throw new ClientError('Requires userId', 400);
+  else if (userId < 1) throw new ClientError('Invalid userId', 400);
+  res.redirect('https://www.reddit.com/api/v1/authorize?' +
+    [
+      'response_type=code',
+      'client_id=EmIwQa2jhiAeCw',
+      'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
+      'scope=identity+mysubreddits+submit+read',
+      'state=' + userId + Buffer.from((Math.random() * 999999).toString()).toString('base64'),
+      'duration=permanent'
+    ].join('&'));
+});
+
+app.get('/api/account/reddit/authorize', (req, res, next) => {
+  const userId = req.body.userId;
+  const account = {};
+
+  if (!userId && userId !== 0) throw new ClientError('Requires userId', 400);
+  else if (userId < 1) throw new ClientError('Invalid userId', 400);
+  fetch('https://www.reddit.com/api/v1/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: 'Basic ' + Buffer.from('EmIwQa2jhiAeCw:1obrKsmmOTNUA7czIeS5SEBmY4A').toString('base64')
+    },
+    body: [
+      'grant_type=authorization_code',
+      'code=' + req.query.code,
+      'redirect_uri=http://localhost:3000/api/account/reddit/authorize'
+    ].join('&')
+  })
+    .then(resp => resp.json())
+    .then(data => {
+      Object.assign(account, data);
+      return fetch('https://oauth.reddit.com/api/v1/me', {
+        headers: { Authorization: 'Bearer ' + account.access_token }
+      });
+    }).then(resp => resp.json())
+    .then(data => db.query(`
+      INSERT INTO "accounts" ("name", "access", "refresh", "expiration", "userId")
+           VALUES ($1, $2, $3, $4, $5);
+      `, [
+      data.name,
+      account.access_token,
+      account.refresh_token,
+      (account.expires_in + Date.now()).toString(),
+      userId
+    ]))
+    .then(() => res.status(201).redirect('http://localhost:3000'))
     .catch(err => next(err));
 });
 
