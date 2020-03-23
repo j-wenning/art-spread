@@ -23,8 +23,6 @@ const upload = multer({
   }
 }).single('image');
 
-const fetch = require('node-fetch');
-
 app.use(staticMiddleware);
 app.use(sessionMiddleware);
 
@@ -165,59 +163,6 @@ app.post('/api/post/', (req, res, next) => {
       res.json(req.file);
     }
   });
-});
-
-app.get('/api/account/reddit/request', (req, res, next) => {
-  const userId = req.session.userId;
-
-  if (!userId) throw new ClientError('Requires userId', 403);
-  res.redirect('https://www.reddit.com/api/v1/authorize?' +
-    [
-      'response_type=code',
-      'client_id=EmIwQa2jhiAeCw',
-      'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
-      'scope=identity+mysubreddits+submit+read',
-      'state=' + userId + Buffer.from((Math.random() * 999999).toString()).toString('base64'),
-      'duration=permanent'
-    ].join('&'));
-});
-
-app.get('/api/account/reddit/authorize', (req, res, next) => {
-  const userId = req.session.userId;
-  const account = {};
-
-  if (!userId) throw new ClientError('Requires userId', 403);
-  fetch('https://www.reddit.com/api/v1/access_token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: 'Basic ' + Buffer.from('EmIwQa2jhiAeCw:1obrKsmmOTNUA7czIeS5SEBmY4A').toString('base64')
-    },
-    body: [
-      'grant_type=authorization_code',
-      'code=' + req.query.code,
-      'redirect_uri=http://localhost:3000/api/account/reddit/authorize'
-    ].join('&')
-  })
-    .then(resp => resp.json())
-    .then(data => {
-      Object.assign(account, data);
-      return fetch('https://oauth.reddit.com/api/v1/me', {
-        headers: { Authorization: 'Bearer ' + account.access_token }
-      });
-    }).then(resp => resp.json())
-    .then(data => db.query(`
-      INSERT INTO "accounts" ("name", "access", "refresh", "expiration", "userId")
-           VALUES ($1, $2, $3, $4, $5);
-      `, [
-      data.name,
-      account.access_token,
-      account.refresh_token,
-      (account.expires_in + Date.now()).toString(),
-      userId
-    ]))
-    .then(() => res.status(201).redirect('http://localhost:3000'))
-    .catch(err => next(err));
 });
 
 // user can post profile data
