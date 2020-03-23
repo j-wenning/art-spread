@@ -24,6 +24,7 @@ const upload = multer({
 }).single('image');
 
 const fetch = require('node-fetch');
+const qs = require('querystring');
 
 app.use(staticMiddleware);
 app.use(sessionMiddleware);
@@ -173,25 +174,19 @@ app.get('/api/account/reddit/request', (req, res, next) => {
   if (!userId) throw new ClientError('Requires userId', 403);
   req.session.authState = userId + Buffer.from((Math.random() * 999999).toString()).toString('base64');
 
-  res.status(200).redirect('https://www.reddit.com/api/v1/authorize?' +
+  res.redirect('https://www.reddit.com/api/v1/authorize?' +
     [
       'response_type=code',
       'client_id=EmIwQa2jhiAeCw',
       'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
       'scope=identity+mysubreddits+submit+read',
       'state=' + req.session.authState,
-      'duration=permanent',
-      'userId=' + 'thisis a user idand it may help' + userId
+      'duration=permanent'
     ].join('&'));
 });
 
 app.get('/api/account/reddit/authorize', (req, res, next) => {
-  fetch('http://localhost:3000/api/account/reddit/authorize', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...req.query })
-  })
-    .catch(err => next(err));
+  res.redirect('/reddit-oauth.html?' + qs.encode(req.query));
 });
 
 app.post('/api/account/reddit/authorize', (req, res, next) => {
@@ -219,8 +214,8 @@ app.post('/api/account/reddit/authorize', (req, res, next) => {
       });
     }).then(resp => resp.json())
     .then(data => db.query(`
-      INSERT INTO "accounts" ("name", "access", "refresh", "expiration", "userId")
-           VALUES ($1, $2, $3, $4, $5);
+      INSERT INTO "accounts" ("type", "name", "access", "refresh", "expiration", "userId")
+           VALUES ("reddit", $1, $2, $3, $4, $5);
       `, [
       data.name,
       account.access_token,
@@ -228,7 +223,7 @@ app.post('/api/account/reddit/authorize', (req, res, next) => {
       (account.expires_in + Date.now()).toString(),
       userId
     ]))
-    .then(() => res.status(201).redirect('http://localhost:3000'))
+    .then(() => res.redirect('http://localhost:3000'))
     .catch(err => next(err));
 });
 
