@@ -123,7 +123,9 @@ ALTER SEQUENCE public."account-profile-links_linkId_seq" OWNED BY public."accoun
 CREATE TABLE public.accounts (
     "accountId" integer NOT NULL,
     name character varying(255) NOT NULL,
-    token character varying(255) NOT NULL,
+    access character varying(255) NOT NULL,
+    refresh character varying(255),
+    expiration character varying(255) NOT NULL,
     "userId" integer NOT NULL
 );
 
@@ -323,8 +325,6 @@ ALTER TABLE ONLY public.users ALTER COLUMN "userId" SET DEFAULT nextval('public.
 --
 
 COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM stdin;
-1	1	1
-2	2	1
 \.
 
 
@@ -332,9 +332,7 @@ COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM st
 -- Data for Name: accounts; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.accounts ("accountId", name, token, "userId") FROM stdin;
-1	an account	123512asdffs	1
-2	another account	98374sdokj	1
+COPY public.accounts ("accountId", name, access, refresh, expiration, "userId") FROM stdin;
 \.
 
 
@@ -343,8 +341,6 @@ COPY public.accounts ("accountId", name, token, "userId") FROM stdin;
 --
 
 COPY public.posts ("postId", body, tags, "imgPath", "profileId") FROM stdin;
-1	new long boy body	some more cool tags	./realerpath	1
-2	long boy body	some cool tags	./realestpath	1
 \.
 
 
@@ -353,7 +349,6 @@ COPY public.posts ("postId", body, tags, "imgPath", "profileId") FROM stdin;
 --
 
 COPY public.profiles ("profileId", name, "imgPath", "userId") FROM stdin;
-1	proooofile	./reallyreallpath	1
 \.
 
 
@@ -362,10 +357,6 @@ COPY public.profiles ("profileId", name, "imgPath", "userId") FROM stdin;
 --
 
 COPY public.publications ("publicationId", url, "accountId", "postId") FROM stdin;
-1	http://realurl.com/123	1	1
-2	http://anotherrealurl.com/987	2	1
-3	http://realurl.com/456	1	2
-4	http://anotherrealurl.com/654	2	2
 \.
 
 
@@ -374,7 +365,6 @@ COPY public.publications ("publicationId", url, "accountId", "postId") FROM stdi
 --
 
 COPY public.users ("userId", username, password) FROM stdin;
-1	user	pass
 \.
 
 
@@ -382,42 +372,42 @@ COPY public.users ("userId", username, password) FROM stdin;
 -- Name: account-profile-links_linkId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 2, true);
+SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 1, false);
 
 
 --
 -- Name: accounts_accountId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."accounts_accountId_seq"', 2, true);
+SELECT pg_catalog.setval('public."accounts_accountId_seq"', 1, false);
 
 
 --
 -- Name: posts_postId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."posts_postId_seq"', 2, true);
+SELECT pg_catalog.setval('public."posts_postId_seq"', 1, false);
 
 
 --
 -- Name: profiles_profileId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."profiles_profileId_seq"', 1, true);
+SELECT pg_catalog.setval('public."profiles_profileId_seq"', 1, false);
 
 
 --
 -- Name: publications_publicationId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."publications_publicationId_seq"', 4, true);
+SELECT pg_catalog.setval('public."publications_publicationId_seq"', 1, false);
 
 
 --
 -- Name: users_userId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."users_userId_seq"', 1, true);
+SELECT pg_catalog.setval('public."users_userId_seq"', 1, false);
 
 
 --
