@@ -8,33 +8,48 @@ const sessionMiddleware = require('./session-middleware');
 
 const app = express();
 
+const multer = require('multer');
+const path = require('path');
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, './database/images'),
+    filename: (req, file, cb) => cb(null,
+      `${Date.now()}-${req.body.profileId}-${Math.floor(Math.random() * 999)}${path.extname(file.originalname)}`
+    )
+  }),
+  fileFilter: (req, file, cb) => {
+    cb(null, Number(req.body.profileId) && req.body.profileId > 0);
+  }
+}).single('image');
+
 app.use(staticMiddleware);
 app.use(sessionMiddleware);
 
 app.use(express.json());
 
-app.get('/api/user', (req, res, next) => {
+app.post('/api/user', (req, res, next) => {
   const { username, password } = req.body;
 
   if (!username) throw new ClientError('Requires username', 400);
-  if (!password) throw new ClientError('Requires password', 400);
+  else if (!password) throw new ClientError('Requires password', 400);
   db.query(`
     SELECT "userId"
       FROM "users"
      WHERE "username" = $1 AND "password" = $2;
   `, [username, password])
     .then(result => {
-      if (result.rows.length === 0) throw new ClientError('User does not exist.', 404);
-      res.json(result.rows[0]);
+      if (result.rowCount === 0) throw new ClientError('User does not exist.', 404);
+      req.session.userId = result.rows[0].userId;
+      res.status(200).send('Logged in successfully.');
     })
     .catch(err => next(err));
 });
 
 app.get('/api/profiles/:userId', (req, res, next) => {
-  const userId = Number(req.params.userId);
+  const userId = req.session.userId;
 
-  if (!userId && userId !== 0) throw new ClientError('Requires userId', 400);
-  if (userId < 1) throw new ClientError('Invalid userId.', 400);
+  if (!userId) throw new ClientError('Requires userId', 403);
   db.query(`
       SELECT "profileId",
              "name",
@@ -50,8 +65,12 @@ app.get('/api/profiles/:userId', (req, res, next) => {
 });
 
 app.get('/api/accounts/:profileId', (req, res, next) => {
+  const userId = req.session.userId;
   const profileId = Number(req.params.profileId);
 
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
+  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
   db.query(`
       SELECT "a"."accountId",
              "a"."name",
@@ -68,11 +87,13 @@ app.get('/api/accounts/:profileId', (req, res, next) => {
 });
 
 app.get('/api/posts/:profileId', (req, res, next) => {
+  const userId = req.session.userId;
   const postId = Number(req.body.postId);
   const postCount = Number(req.body.postCount);
   const profileId = Number(req.params.profileId);
 
-  if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
   else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
   else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
   else if (postId < 1) throw new ClientError('Invalid postId', 400);
@@ -89,18 +110,20 @@ app.get('/api/posts/:profileId', (req, res, next) => {
        LIMIT $3;
   `, [postId, profileId, postCount])
     .then(result => {
-      if (result.rows.length === 0) throw new ClientError('Posts do not exist.', 404);
+      if (result.rowCount === 0) throw new ClientError('Posts do not exist.', 404);
       res.json(result.rows || []);
     })
     .catch(err => next(err));
 });
 
 app.get('/api/publications/:profileId', (req, res, next) => {
+  const userId = req.session.userId;
   const postId = Number(req.body.postId);
   const postCount = Number(req.body.postCount);
   const profileId = req.params.profileId;
 
-  if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
   else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
   else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
   else if (postId < 1) throw new ClientError('Invalid postId', 400);
@@ -123,6 +146,23 @@ app.get('/api/publications/:profileId', (req, res, next) => {
   `, [postId, profileId, postCount])
     .then(result => res.json(result.rows || []))
     .catch(err => next(err));
+});
+
+app.post('/api/post/', (req, res, next) => {
+  const userId = req.session.userId;
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  upload(req, res, err => {
+    if (err) {
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') next(new ClientError('Unexpected file(s).', 400));
+      else next(err);
+    } else {
+      const profileId = Number(req.body.profileId);
+      if (!profileId && profileId !== 0) next(new ClientError('Requires profileId.', 400));
+      else if (profileId < 1) next(new ClientError('Invalid profileId.', 400));
+      res.json(req.file);
+    }
+  });
 });
 
 // user can post profile data

@@ -3,6 +3,14 @@ import React from 'react';
 class Login extends React.Component {
   goToDashboard() {
     this.props.setView('dashboard', {});
+    fetch('/api/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'admin',
+        password: 'admin'
+      })
+    }).catch(err => console.error(err));
   }
 
   render() {
