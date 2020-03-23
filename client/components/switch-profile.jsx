@@ -47,7 +47,16 @@ export default class Settings extends React.Component {
         imagePath: 'admin',
         userId: 'admin'
       })
-    }).catch(err => console.error(err));
+    }).then(response => response.json())
+      .then(data => {
+        this.setState({
+          profiles: this.state.profiles.concat(data)
+        });
+      });
+  }
+
+  goToModifyProfile(event) {
+    this.props.setView('modifyProfile', {});
   }
 
   componentDidMount() {
@@ -75,7 +84,7 @@ export default class Settings extends React.Component {
         </div>
         <div className="row">
           <div className="mt-2 d-flex flex-row w-100 justify-content-center">
-            <button className="btn btn-custom text-custom-primary">
+            <button onClick={this.goToModifyProfile} className="btn btn-custom text-custom-primary">
               Create Profile
             </button>
           </div>
