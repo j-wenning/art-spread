@@ -146,3 +146,21 @@ h1 {
   vertical-align: middle;
   color: red;
 }
+
+.pendingIcon {
+  font-weight: bold;
+  color: maroon;
+  position: absolute;
+  font-size: 145%;
+  top: 20%;
+  left: 43.5%;
+  transform: translate(-50%, -50%)
+}
+
+.fa-border-icon {
+    border-width: 3px;
+    border-style: solid;
+    border-color: rgb(238, 238, 238);
+    border-image: initial;
+    border-radius: 50% 50% 50% 50%;
+}
