@@ -171,22 +171,34 @@ app.get('/api/account/reddit/request', (req, res, next) => {
   const userId = req.session.userId;
 
   if (!userId) throw new ClientError('Requires userId', 403);
-  res.redirect('https://www.reddit.com/api/v1/authorize?' +
+  req.session.authState = userId + Buffer.from((Math.random() * 999999).toString()).toString('base64');
+
+  res.status(200).redirect('https://www.reddit.com/api/v1/authorize?' +
     [
       'response_type=code',
       'client_id=EmIwQa2jhiAeCw',
       'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
       'scope=identity+mysubreddits+submit+read',
-      'state=' + userId + Buffer.from((Math.random() * 999999).toString()).toString('base64'),
-      'duration=permanent'
+      'state=' + req.session.authState,
+      'duration=permanent',
+      'userId=' + 'thisis a user idand it may help' + userId
     ].join('&'));
 });
 
 app.get('/api/account/reddit/authorize', (req, res, next) => {
+  fetch('http://localhost:3000/api/account/reddit/authorize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...req.query })
+  })
+    .catch(err => next(err));
+});
+
+app.post('/api/account/reddit/authorize', (req, res, next) => {
   const userId = req.session.userId;
   const account = {};
-
   if (!userId) throw new ClientError('Requires userId', 403);
+  if (req.session.authState !== req.body.state) throw new ClientError('State mismatch', 403);
   fetch('https://www.reddit.com/api/v1/access_token', {
     method: 'POST',
     headers: {
@@ -195,7 +207,7 @@ app.get('/api/account/reddit/authorize', (req, res, next) => {
     },
     body: [
       'grant_type=authorization_code',
-      'code=' + req.query.code,
+      'code=' + req.body.code,
       'redirect_uri=http://localhost:3000/api/account/reddit/authorize'
     ].join('&')
   })
