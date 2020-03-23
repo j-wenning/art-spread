@@ -4,6 +4,7 @@ import Header from './header';
 import Login from './login';
 import CreatePost from './create-post';
 import Settings from './settings';
+import ViewPost from './view-post';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -67,6 +68,13 @@ export default class App extends React.Component {
           <div className="app">
             <Header setView={this.setView} title={this.state.view.name} />
             <Settings setView={this.setView} />
+          </div>
+        );
+      case 'viewPost':
+        return (
+          <div className="app">
+            <Header setView={this.setView} title={this.state.view.name} />
+            <ViewPost setView={this.setView} />
           </div>
         );
     }
