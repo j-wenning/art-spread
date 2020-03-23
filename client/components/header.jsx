@@ -21,7 +21,11 @@ export default class Header extends React.Component {
       : <i onClick={this.goToDashboard} className="fas fa-arrow-left fa-2x" />;
     return (
       <div className="header navbar mb-3">
-        <h1 className="navbar-brand text-capitalize text-custom-primary">{this.props.title}</h1>
+        <h1 className="navbar-brand text-capitalize text-custom-primary">
+          {
+            this.props.title.replace(/[A-Z]/g, a => ' ' + a)
+          }
+        </h1>
         <button className="btn btn-custom btn-action text-custom-secondary" type="button">
           {actionIcon}
         </button>
