@@ -5,6 +5,7 @@ import Login from './login';
 import CreatePost from './create-post';
 import Settings from './settings';
 import ViewPost from './view-post';
+import SwitchProfile from './switch-profile';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -75,6 +76,13 @@ export default class App extends React.Component {
           <div className="app">
             <Header setView={this.setView} title={this.state.view.name} />
             <ViewPost setView={this.setView} />
+          </div>
+        );
+      case 'switchProfile':
+        return (
+          <div className="app">
+            <Header setView={this.setView} title={this.state.view.name} />
+            <SwitchProfile setView={this.setView} />
           </div>
         );
     }
