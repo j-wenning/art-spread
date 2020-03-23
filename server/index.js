@@ -42,14 +42,37 @@ app.post('/api/user', (req, res, next) => {
      WHERE "username" = $1 AND "password" = $2;
   `, [username, password])
     .then(result => {
-      if (result.rowCount === 0) throw new ClientError('User does not exist.', 404);
+      if (result.rowCount === 0) throw new ClientError('User does not exist', 404);
       req.session.userId = result.rows[0].userId;
       res.status(200).send('Logged in successfully.');
     })
     .catch(err => next(err));
 });
 
-app.get('/api/profiles/:userId', (req, res, next) => {
+app.get('/api/profile/current', (req, res, next) => {
+  const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
+
+  if (profileId) {
+    res.status(200).send(profileId);
+    return;
+  }
+  db.query(`
+      SELECT "profileId"
+        FROM "profiles"
+       WHERE "userId" = $1
+    ORDER BY "profileId" DESC
+       LIMIT 1;
+  `, [userId])
+    .then(result => {
+      const profileId = result.rows[0].profileId;
+      req.session.currentProfile = profileId;
+      res.json(profileId || null);
+    })
+    .catch(err => next(err));
+});
+
+app.get('/api/profiles', (req, res, next) => {
   const userId = req.session.userId;
 
   if (!userId) throw new ClientError('Requires userId', 403);
@@ -151,14 +174,27 @@ app.get('/api/publications/:profileId', (req, res, next) => {
     .catch(err => next(err));
 });
 
+app.post('/api/profile/current/:profileId', (res, req, next) => {
+  const userId = req.session.userId;
+  const profileId = req.params.profileId;
+
+  if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
+  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
+  db.query(`
+    SELECT *
+      FROM "profiles"
+     WHERE "userId" = $1, "profileId" = $2;
+  `, [userId, req.params.profileId])
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('Id mismatch', 403);
+      req.session.currentProfile = profileId;
+      res.sendStatus(200);
+    })
+    .catch(err => next(err));
+});
+
 app.post('/api/post/', (req, res, next) => {
   const userId = req.session.userId;
-
-  const sql = `
-  INSERT INTO "posts" ("body", "tags", "imgPath", "profileId")
-  VALUES ($1, $2, $3, $4)
-  returning *
-  `;
 
   if (!userId) throw new ClientError('Requires userId', 403);
 
@@ -171,7 +207,11 @@ app.post('/api/post/', (req, res, next) => {
       const profileId = Number(req.body.profileId);
       if (!profileId && profileId !== 0) next(new ClientError('Requires profileId.', 400));
       else if (profileId < 1) next(new ClientError('Invalid profileId.', 400));
-      db.query(sql, [body, tags, req.file.filename, profileId])
+      db.query(`
+        INSERT INTO "posts" ("body", "tags", "imgPath", "profileId")
+             VALUES ($1, $2, $3, $4)
+          RETURNING *;
+      `, [body, tags, req.file.filename, profileId])
         .then(data => res.json(data))
         .catch(err => next(err));
     }
@@ -201,8 +241,10 @@ app.get('/api/account/reddit/authorize', (req, res, next) => {
 
 app.post('/api/account/reddit/authorize', (req, res, next) => {
   const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
   const account = {};
   if (!userId) throw new ClientError('Requires userId', 403);
+  if (!profileId) throw new ClientError('Requires userId', 400);
   if (req.session.authState !== req.body.state) throw new ClientError('State mismatch', 403);
   fetch('https://www.reddit.com/api/v1/access_token', {
     method: 'POST',
@@ -224,14 +266,25 @@ app.post('/api/account/reddit/authorize', (req, res, next) => {
       });
     }).then(resp => resp.json())
     .then(data => db.query(`
-      INSERT INTO "accounts" ("type", "name", "access", "refresh", "expiration", "userId")
-           VALUES ("reddit", $1, $2, $3, $4, $5);
+      WITH "account_cte" AS (
+          INSERT INTO "accounts" ("type", "name", "access", "refresh", "expiration", "userId")
+               VALUES ('reddit', $1, $2, $3, $4, $5)
+          ON CONFLICT
+        ON CONSTRAINT "unique-accounts" DO UPDATE
+                  SET "access" = $2, "refresh" = $3, "expiration" = $4
+            RETURNING "accountId"
+      )
+      INSERT INTO "account-profile-links" ("accountId", "profileId")
+           SELECT "account_cte"."accountId", $6 AS "profileId"
+             FROM "account_cte"
+      ON CONFLICT DO NOTHING;
       `, [
       data.name,
       account.access_token,
       account.refresh_token,
       (account.expires_in + Date.now()).toString(),
-      userId
+      userId,
+      profileId
     ]))
     .then(() => res.redirect('http://localhost:3000'))
     .catch(err => next(err));

@@ -19,7 +19,7 @@ export default class Dashboard extends React.Component {
     this.goToSettings = this.goToSettings.bind(this);
   }
 
-  getProfile() {
+  getProfiles() {
     fetch('/api/profiles')
       .then(res => res.json())
       .then(data => {
@@ -36,7 +36,7 @@ export default class Dashboard extends React.Component {
   }
 
   componentDidMount() {
-    this.getProfile();
+    this.getProfiles();
   }
 
   goToCreatePost() {
