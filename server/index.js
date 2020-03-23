@@ -154,16 +154,26 @@ app.get('/api/publications/:profileId', (req, res, next) => {
 app.post('/api/post/', (req, res, next) => {
   const userId = req.session.userId;
 
+  const sql = `
+  INSERT INTO "posts" ("body", "tags", "imgPath", "profileId")
+  VALUES ($1, $2, $3, $4)
+  returning *
+  `;
+
   if (!userId) throw new ClientError('Requires userId', 403);
+
   upload(req, res, err => {
     if (err) {
       if (err.code === 'LIMIT_UNEXPECTED_FILE') next(new ClientError('Unexpected file(s).', 400));
       else next(err);
     } else {
+      const { body, tags } = req.body;
       const profileId = Number(req.body.profileId);
       if (!profileId && profileId !== 0) next(new ClientError('Requires profileId.', 400));
       else if (profileId < 1) next(new ClientError('Invalid profileId.', 400));
-      res.json(req.file);
+      db.query(sql, [body, tags, req.file.filename, profileId])
+        .then(data => res.json(data))
+        .catch(err => next(err));
     }
   });
 });
