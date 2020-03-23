@@ -95,8 +95,7 @@ app.get('/api/accounts/:profileId', (req, res, next) => {
   const profileId = Number(req.params.profileId);
 
   if (!userId) throw new ClientError('Requires userId', 403);
-  else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
-  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
   db.query(`
       SELECT "a"."accountId",
              "a"."name",
@@ -112,19 +111,18 @@ app.get('/api/accounts/:profileId', (req, res, next) => {
     .catch(err => next(err));
 });
 
-app.get('/api/posts/:profileId', (req, res, next) => {
+app.get('/api/posts/:postId', (req, res, next) => {
   const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
   const postId = Number(req.body.postId);
   const postCount = Number(req.body.postCount);
-  const profileId = Number(req.params.profileId);
 
   if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
   else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
   else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
-  else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
   else if (postId < 1) throw new ClientError('Invalid postId', 400);
   else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
-  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
   db.query(`
       SELECT "postId",
              "body",
@@ -144,17 +142,16 @@ app.get('/api/posts/:profileId', (req, res, next) => {
 
 app.get('/api/publications/:profileId', (req, res, next) => {
   const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
   const postId = Number(req.body.postId);
   const postCount = Number(req.body.postCount);
-  const profileId = req.params.profileId;
 
   if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
   else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
   else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
-  else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
   else if (postId < 1) throw new ClientError('Invalid postId', 400);
   else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
-  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
   db.query(`
     WITH "posts_cte" AS (
         SELECT "postId"
@@ -172,6 +169,26 @@ app.get('/api/publications/:profileId', (req, res, next) => {
   `, [postId, profileId, postCount])
     .then(result => res.json(result.rows || []))
     .catch(err => next(err));
+});
+
+app.get('/api/account/reddit/request', (req, res, next) => {
+  const userId = req.session.userId;
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  req.session.authState = userId + Buffer.from((Math.random() * 999999).toString()).toString('base64');
+  res.redirect('https://www.reddit.com/api/v1/authorize?' +
+    [
+      'response_type=code',
+      'client_id=EmIwQa2jhiAeCw',
+      'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
+      'scope=identity+mysubreddits+submit+read',
+      'state=' + req.session.authState,
+      'duration=permanent'
+    ].join('&'));
+});
+
+app.get('/api/account/reddit/authorize', (req, res, next) => {
+  res.redirect('/reddit-oauth.html?' + qs.encode(req.query));
 });
 
 app.post('/api/profile/current/:profileId', (res, req, next) => {
@@ -218,34 +235,13 @@ app.post('/api/post/', (req, res, next) => {
   });
 });
 
-app.get('/api/account/reddit/request', (req, res, next) => {
-  const userId = req.session.userId;
-
-  if (!userId) throw new ClientError('Requires userId', 403);
-  req.session.authState = userId + Buffer.from((Math.random() * 999999).toString()).toString('base64');
-
-  res.redirect('https://www.reddit.com/api/v1/authorize?' +
-    [
-      'response_type=code',
-      'client_id=EmIwQa2jhiAeCw',
-      'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
-      'scope=identity+mysubreddits+submit+read',
-      'state=' + req.session.authState,
-      'duration=permanent'
-    ].join('&'));
-});
-
-app.get('/api/account/reddit/authorize', (req, res, next) => {
-  res.redirect('/reddit-oauth.html?' + qs.encode(req.query));
-});
-
 app.post('/api/account/reddit/authorize', (req, res, next) => {
   const userId = req.session.userId;
   const profileId = req.session.currentProfile;
   const account = {};
   if (!userId) throw new ClientError('Requires userId', 403);
-  if (!profileId) throw new ClientError('Requires userId', 400);
-  if (req.session.authState !== req.body.state) throw new ClientError('State mismatch', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  else if (req.session.authState !== req.body.state) throw new ClientError('State mismatch', 403);
   fetch('https://www.reddit.com/api/v1/access_token', {
     method: 'POST',
     headers: {
@@ -286,25 +282,21 @@ app.post('/api/account/reddit/authorize', (req, res, next) => {
       userId,
       profileId
     ]))
-    .then(() => res.redirect('http://localhost:3000'))
+    .then(() => {
+      delete req.session.authState;
+      res.redirect('http://localhost:3000');
+    })
     .catch(err => next(err));
+});
+
+app.post('/api/publish/:postId', (res, req, next) => {
+
 });
 
 // user can post profile data
 app.post('/api/profiles', (req, res, next) => {
   const { profileId, name, imagePath, userId } = req.body;
   const values = [profileId, name, imagePath, userId];
-
-  const sql = ' ';
-  db.query(sql, values)
-    .then(result => res.json(result.rows[0]))
-    .catch(err => next(err));
-});
-
-// save post data. Front end can send post data to database.
-app.post('/api/posts', (req, res, next) => {
-  const { postId, postBody, postTags, profileId } = req.body;
-  const values = [postId, postBody, postTags, profileId];
 
   const sql = ' ';
   db.query(sql, values)
