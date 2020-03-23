@@ -37,21 +37,39 @@ export default class ViewPost extends React.Component {
       });
   }
 
+  deletePost() {
+    fetch(`/api/posts/${event.target.id}`, {
+      method: 'DELETE'
+    })
+      .then(res => res.json())
+      .then(data => {
+        this.setState({
+          comments: this.state.comments.concat(data)
+        });
+      });
+  }
+
   componentDidMount() {
     this.getAnalytics();
     this.getPost();
     this.getComments();
   }
 
-  // handleClick(commentId) {
-  //   const comm = this.state.comments.filter(comment => comment.commentId === commentId);
-  //   this.setState({ comments[]{liked: !comm.liked}})
-  // }
+  handleClick(commentId) {
+    this.setState(() => {
+      const [...comments] = this.state.comments;
+      const index = comments.findIndex(c =>
+        c.commentId === commentId);
+      comments[index].liked = !comments[index].liked;
+      return comments;
+    });
+  }
 
   render() {
     const comments = this.state.comments.map(comment => <CommentItem
       key={comment.commentId} commenter={comment.commenter}
-      like={() => this.handleClick(comment.commentId)} liked={comment.liked}
+      like={() => this.handleClick(comment.commentId)}
+      liked={comment.liked}
       commentBody={comment.commentBody} id={comment.commentId}/>);
     return (
       <div>
@@ -95,7 +113,7 @@ export default class ViewPost extends React.Component {
           {comments}
         </div>
         <div className="mt-2 d-flex flex-row w-100 justify-content-center">
-          <button className="btn btn-custom text-custom-primary">
+          <button onClick={this.deletePost} className="btn btn-custom text-custom-primary">
             Delete post
           </button>
         </div>

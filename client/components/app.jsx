@@ -11,7 +11,7 @@ export default class App extends React.Component {
     super(props);
     this.state = {
       view: {
-        name: 'viewPost',
+        name: 'login',
         params: {}
       }
     };
