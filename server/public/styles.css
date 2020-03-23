@@ -70,6 +70,15 @@ h1 {
   background-color: rgb(182, 182, 182);
 }
 
+.prof-list {
+  box-sizing: border-box;
+  height: 520px;
+  padding: 1px 15px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  background-color: rgb(182, 182, 182);
+}
+
 .horizontal-list {
   box-sizing: border-box;
   height: 50px;

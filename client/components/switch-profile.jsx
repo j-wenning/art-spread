@@ -14,11 +14,40 @@ export default class Settings extends React.Component {
   }
 
   getProfiles() {
-    fetch('/api/accounts')
+    fetch('/api/profiles')
       .then(res => res.json())
       .then(data => {
         this.setState({ profiles: data });
       });
+  }
+
+  deleteProfile() {
+    const eventTarget = event.target.id;
+    fetch(`/api/profiles/${eventTarget}`, {
+      method: 'DELETE'
+    })
+      .then(() => {
+        function test(profile) {
+          return profile.id !== Number(eventTarget);
+        }
+        const newArr = this.state.profiles.filter(test);
+        this.setState({
+          profiles: newArr
+        });
+      });
+  }
+
+  createProfile() {
+    fetch('/api/profiles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        profileId: 'admin',
+        name: 'admin',
+        imagePath: 'admin',
+        userId: 'admin'
+      })
+    }).catch(err => console.error(err));
   }
 
   componentDidMount() {
@@ -30,7 +59,7 @@ export default class Settings extends React.Component {
       <div>
         <div className="row">
           <div className="col">
-            <div className="list overflow-auto">
+            <div className="prof-list overflow-auto">
               {this.state.profiles.map(profile => {
                 return (
                   <ProfileItem
