@@ -17,6 +17,7 @@ export default class Dashboard extends React.Component {
     };
     this.goToCreatePost = this.goToCreatePost.bind(this);
     this.goToSettings = this.goToSettings.bind(this);
+    this.goToSwitchProfile = this.goToSwitchProfile.bind(this);
   }
 
   getProfile() {
@@ -47,6 +48,10 @@ export default class Dashboard extends React.Component {
     this.props.setView('settings', {});
   }
 
+  goToSwitchProfile() {
+    this.props.setView('switchProfile', {});
+  }
+
   render() {
     const pfp = this.state.profile.picture || './assets/images/default-profile.svg';
     const pfn = this.state.profile.name || 'profile';
@@ -57,7 +62,7 @@ export default class Dashboard extends React.Component {
           <div className="col-7">
             <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
               <button className="col btn btn-custom text-custom-primary mb-4">Modify Profile</button>
-              <button className="col btn btn-custom text-custom-primary mb-4">Switch Profile</button>
+              <button onClick={this.goToSwitchProfile} className="col btn btn-custom text-custom-primary mb-4">Switch Profile</button>
               <button onClick={this.goToCreatePost} className="col btn btn-custom text-custom-primary mb-4">Create Post</button>
             </div>
           </div>
