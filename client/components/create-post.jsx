@@ -38,6 +38,7 @@ class CreatePost extends React.Component {
     }).then(res => {
       console.warn(res);
     });
+    this.goToViewPost();
     this.props.sendPost(newSubmission);
     this.setState({
       postBody: '',
