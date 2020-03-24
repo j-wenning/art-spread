@@ -90,7 +90,7 @@ export default class Dashboard extends React.Component {
           <div className="row">
             <div className="col-7">
               <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
-                <button className="col btn btn-custom text-custom-primary mb-4">Modify Profile</button>
+                <button onClick={this.goToModifyProfile} className="col btn btn-custom text-custom-primary mb-4">Modify Profile</button>
                 <button onClick={this.goToSwitchProfile} className="col btn btn-custom text-custom-primary mb-4">Switch Profile</button>
                 <button onClick={this.goToCreatePost} className="col btn btn-custom text-custom-primary mb-4">Create Post</button>
               </div>
