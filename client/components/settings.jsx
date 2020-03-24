@@ -10,6 +10,7 @@ export default class Settings extends React.Component {
         accountId: i
       }))
     };
+    this.getAccounts = this.getAccounts.bind(this);
   }
 
   getAccounts() {

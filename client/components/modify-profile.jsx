@@ -1,15 +1,21 @@
 import React from 'react';
+import AccountItem from './account-item';
 
 class ModifyProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      accounts: Array(15).fill(0).map((account, i) => ({
+        name: 'account name',
+        accountId: i
+      })),
       profile: {
         picture: null
       },
       image: ''
     };
     this.handleAvatar = this.handleAvatar.bind(this);
+    this.getAccounts = this.getAccounts.bind(this);
   }
 
   handleAvatar(event) {
@@ -17,6 +23,18 @@ class ModifyProfile extends React.Component {
     this.setState({
       image: files[0]
     });
+  }
+
+  getAccounts() {
+    fetch('/api/accounts')
+      .then(res => res.json())
+      .then(data => {
+        this.setState({ accounts: data });
+      });
+  }
+
+  componentDidMount() {
+    this.getAccounts();
   }
 
   render() {
@@ -71,6 +89,28 @@ class ModifyProfile extends React.Component {
               <button className="dropdown-item" type="button">account 1</button>
               <button className="dropdown-item" type="button">account 2</button>
               <button className="dropdown-item" type="button">account 3</button>
+            </div>
+          </div>
+          <div className="row mt-3">
+            <div className="col">
+              <div className="list overflow-auto">
+                {this.state.accounts.map(account => {
+                  return (
+                    <AccountItem
+                      key={account.accountId}
+                      name={account.name}
+                      id={account.accountId}
+                    />);
+                })
+                }
+              </div>
+            </div>
+          </div>
+          <div className="row">
+            <div className="mt-2 d-flex flex-row w-100 justify-content-end mr-4">
+              <button className="btn btn-custom text-custom-primary">
+               Submit
+              </button>
             </div>
           </div>
         </form>
