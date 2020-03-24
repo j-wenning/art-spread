@@ -23,15 +23,15 @@ export default class PostPreview extends React.Component {
           />
         </div>
         <div className="col-8">
-          <p className="text-custom-primary text-plate">
+          <p className="post-preview-fields text-custom-primary text-plate">
             {this.props.post.body.substr(0, 30) +
               (this.props.post.body.length > 30 ? '...' : '')}
           </p>
-          <p className="text-primary text-plate">
+          <p className="post-preview-fields text-primary text-plate">
             {this.props.post.tags.substr(0, 30) +
               (this.props.post.tags.length > 30 ? '...' : '')}
           </p>
-          <p className="text-custom-primary text-plate">
+          <p className="post-preview-fields text-custom-primary text-plate">
             {this.state.analytics || 'loading...'}
           </p>
         </div>
