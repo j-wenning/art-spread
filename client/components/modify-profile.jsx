@@ -5,14 +5,15 @@ class ModifyProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      accounts: Array(15).fill(0).map((account, i) => ({
+      accounts: Array(10).fill(0).map((account, i) => ({
         name: 'account name',
         accountId: i
       })),
-      lists: [],
-      profile: {
-        picture: null
-      },
+      lists: Array(5).fill(0).map((account, i) => ({
+        name: 'account name',
+        accountId: i
+      })),
+      currentPicture: null,
       vanityHandle: '',
       bio: '',
       image: ''
@@ -80,7 +81,7 @@ class ModifyProfile extends React.Component {
   }
 
   render() {
-    const pfp = this.state.profile.picture || './assets/images/default-profile.svg';
+    const pfp = this.state.currentPicture || './assets/images/default-profile.svg';
     return (
       <div>
         <form encType="multipart/form-data"
@@ -128,9 +129,15 @@ class ModifyProfile extends React.Component {
               dissociated accounts
             </button>
             <div className="dropdown-menu" aria-labelledby="dropdownMenu2">
-              <button className="dropdown-item" type="button">account 1</button>
-              <button className="dropdown-item" type="button">account 2</button>
-              <button className="dropdown-item" type="button">account 3</button>
+              {this.state.lists.map(account => {
+                return (
+                  <AccountItem
+                    key={account.accountId}
+                    name={account.name}
+                    id={account.accountId}
+                  />);
+              })
+              }
             </div>
           </div>
           <div className="row mt-3">
