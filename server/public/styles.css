@@ -192,3 +192,7 @@ h1 {
 .pending-icon-relative {
     position: relative;
 }
+
+.dropdown-background {
+  background-color: rgb(238, 238, 238);
+}

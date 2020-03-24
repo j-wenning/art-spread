@@ -7,12 +7,14 @@ class ModifyProfile extends React.Component {
     super(props);
     this.state = {
       accounts: Array(10).fill(0).map((account, i) => ({
+        type: '',
         name: 'account name',
         accountId: i
       })),
       lists: Array(5).fill(0).map((account, i) => ({
+        type: '',
         name: 'account name',
-        listId: i
+        accountId: i
       })),
       currentPicture: null,
       vanityHandle: '',
@@ -129,7 +131,8 @@ class ModifyProfile extends React.Component {
             aria-haspopup="true" aria-expanded="false">
               dissociated accounts
             </button>
-            <div onChange={this.handleChange} className="text-custom-primary dropdown-menu" aria-labelledby="dropdownMenu2">
+            <div onChange={this.handleChange} className="text-custom-primary dropdown-menu"
+              aria-labelledby="dropdownMenu2">
               {this.state.lists.map(list => {
                 return (
                   <ListItem
