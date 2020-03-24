@@ -16,7 +16,7 @@ export default class PendingPost extends React.Component {
     return (
       <div className="post-preview row col">
         <div className="col-4 d-flex align-items-center ">
-          <div className="text-custom-primary mb-4 pendingIcon align-items-center far fa-clock fa-border-icon"></div>
+          <div className="text-custom-primary mb-4 pending-icon align-items-center far fa-clock fa-border-icon"></div>
           <img
             className="preview-image"
             src={this.props.post.img || './assets/images/default-image.svg'}
