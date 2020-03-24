@@ -26,6 +26,7 @@ class ModifyProfile extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.goToDashboard = this.goToDashboard.bind(this);
+    this.deleteAccount = this.deleteAccount.bind(this);
   }
 
   goToDashboard(event) {
@@ -76,6 +77,22 @@ class ModifyProfile extends React.Component {
         } else if (!data.associated) {
           this.setState({ lists: data });
         }
+      });
+  }
+
+  deleteAccount() {
+    const eventTarget = event.target.id;
+    fetch(`/api/profiles/${eventTarget}`, {
+      method: 'DELETE'
+    })
+      .then(() => {
+        function test(account) {
+          return account.accountId !== Number(eventTarget);
+        }
+        const newArr = this.state.accounts.filter(test);
+        this.setState({
+          accounts: newArr
+        });
       });
   }
 
@@ -147,7 +164,7 @@ class ModifyProfile extends React.Component {
           <div className="row mt-3">
             <div className="col">
               <div className="list overflow-auto">
-                {this.state.accounts.map(account => {
+                {this.deleteAccount && this.state.accounts.map(account => {
                   return (
                     <AccountItem
                       key={account.accountId}

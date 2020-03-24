@@ -11,6 +11,23 @@ export default class Settings extends React.Component {
       }))
     };
     this.getAccounts = this.getAccounts.bind(this);
+    this.deleteAccount = this.deleteAccount.bind(this);
+  }
+
+  deleteAccount() {
+    const eventTarget = event.target.id;
+    fetch(`/api/profiles/${eventTarget}`, {
+      method: 'DELETE'
+    })
+      .then(() => {
+        function test(account) {
+          return account.accountId !== Number(eventTarget);
+        }
+        const newArr = this.state.accounts.filter(test);
+        this.setState({
+          accounts: newArr
+        });
+      });
   }
 
   getAccounts() {
@@ -47,7 +64,7 @@ export default class Settings extends React.Component {
           <div className="col">
             <h2 className="text-custom-primary">Accounts</h2>
             <div className="list overflow-auto">
-              {this.state.accounts.map(account => {
+              {this.deleteAccount && this.state.accounts.map(account => {
                 return (
                   <AccountItem
                     key={account.accountId}
