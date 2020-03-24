@@ -90,19 +90,22 @@ app.get('/api/profiles', (req, res, next) => {
     .catch(err => next(err));
 });
 
-app.get('/api/accounts/:profileId', (req, res, next) => {
+app.get('/api/accounts/', (req, res, next) => {
   const userId = req.session.userId;
-  const profileId = Number(req.params.profileId);
+  const profileId = req.session.currentProfile;
 
   if (!userId) throw new ClientError('Requires userId', 403);
   else if (!profileId) throw new ClientError('Requires profileId', 400);
   db.query(`
-      SELECT "a"."accountId",
-             "a"."name",
-             "a"."token"
+      SELECT "accountId",
+             "name",
+              (CASE
+                WHEN "profileId" = $1
+                THEN TRUE
+                ELSE FALSE
+              END) AS "associated"
         FROM "account-profile-links"
-        JOIN "accounts" AS "a" USING ("accountId")
-       WHERE "profileId" = $1
+        JOIN "accounts" USING ("accountId")
     ORDER BY "linkId";
   `, [profileId])
     .then(result => {
@@ -234,23 +237,24 @@ app.post('/api/publish', (req, res, next) => {
 
   // if (!userId) throw new ClientError('Requires userId', 403);
   // else if (!profileId) throw new ClientError('Requires profileId', 400);
-  fetch('https://oauth.reddit.com/api/submit', {
-    method: 'POST',
-    // headers: { Authorization: 'Bearer ' + account.access_token }
-    headers: {
-      Authorization: 'Bearer ' + '466923361867-JIjMHlkFlHvm7UR8N-dzZPmJf-A',
-      'Content-Type': 'application/json'
-    },
-    body: {
-      // api_type: 'json',
-      sr: 'u/Art_Spread',
-      // title: 'test title', // insert this from tables data
-      kind: 'image'
-      // nsfw: false,
-      // resubmit: false,
-      // text: 'testing stuff out here boiz in the body'
-    }
-  }).then(res => res.json())
+  fetch('http://localhost:3000/api/account/refresh')
+    .then(() => fetch('https://oauth.reddit.com/api/submit', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + '466923361867-gbjSgzr-tzRu9Ypoerodf3lA90c',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        api_type: 'json',
+        sr: 'testingground4bots',
+        title: 'test title', // insert this from tables data
+        kind: 'image',
+        nsfw: false,
+        resubmit: false,
+        text: 'testing stuff out here boiz in the body'
+      })
+    }))
+    .then(res => res.json())
     .then(data => res.send(data));
 });
 
