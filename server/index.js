@@ -111,11 +111,12 @@ app.get('/api/accounts/:profileId', (req, res, next) => {
     .catch(err => next(err));
 });
 
-app.get('/api/posts/:postId', (req, res, next) => {
+app.get('/api/posts/:profileId', (req, res, next) => {
   const userId = req.session.userId;
   const profileId = req.session.currentProfile;
   const postId = Number(req.body.postId);
   const postCount = Number(req.body.postCount);
+  const posts = { posts: [], analytics: [] };
 
   if (!userId) throw new ClientError('Requires userId', 403);
   else if (!profileId) throw new ClientError('Requires profileId', 400);
@@ -135,39 +136,45 @@ app.get('/api/posts/:postId', (req, res, next) => {
   `, [postId, profileId, postCount])
     .then(result => {
       if (result.rowCount === 0) throw new ClientError('Posts do not exist.', 404);
-      res.json(result.rows || []);
+      posts.posts = result.rows;
+      return db.query(`
+        WITH "posts_cte" AS (
+            SELECT "postId"
+              FROM "posts"
+             WHERE "postId" >= $1 AND "profileId" = $2
+          ORDER BY "postId" DESC
+            LIMIT $3
+        )
+        SELECT "po"."postId",
+               "pu"."publicationId",
+               "pu"."url",
+               "a" ."type"
+        FROM "posts_cte" AS "po"
+        JOIN "publications" AS "pu" USING ("postId")
+        JOIN "accounts" AS "a" USING ("accountId")
+        ORDER BY "po"."postId", "pu"."publicationId" DESC;
+  `, [postId, profileId, postCount]);
     })
-    .catch(err => next(err));
-});
-
-app.get('/api/publications/:profileId', (req, res, next) => {
-  const userId = req.session.userId;
-  const profileId = req.session.currentProfile;
-  const postId = Number(req.body.postId);
-  const postCount = Number(req.body.postCount);
-
-  if (!userId) throw new ClientError('Requires userId', 403);
-  else if (!profileId) throw new ClientError('Requires profileId', 400);
-  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
-  else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
-  else if (postId < 1) throw new ClientError('Invalid postId', 400);
-  else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
-  db.query(`
-    WITH "posts_cte" AS (
-        SELECT "postId"
-          FROM "posts"
-         WHERE "postId" >= $1 AND "profileId" = $2
-      ORDER BY "postId" DESC
-        LIMIT $3
-    )
-    SELECT "po"."postId",
-           "pu"."publicationId",
-           "pu"."url"
-    FROM "posts_cte" AS "po"
-    JOIN "publications" AS "pu" USING ("postId")
-    ORDER BY "po"."postId", "pu"."publicationId" DESC;
-  `, [postId, profileId, postCount])
-    .then(result => res.json(result.rows || []))
+    .then(result => {
+      const fetches = [];
+      posts.analytics = result.rows.map(item => {
+        let req;
+        if (item.type === 'reddit') {
+          req = new Promise((resolve, reject) => {
+            fetch('url')
+              .then(res => res.json())
+              .then(data => {
+                resolve(data);
+              })
+              .catch(err => reject(err));
+          });
+          fetches.push(req);
+          return req;
+        }
+      });
+      return Promise.all(fetches);
+    })
+    .then(data => res.send(posts))
     .catch(err => next(err));
 });
 
