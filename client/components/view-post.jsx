@@ -5,6 +5,7 @@ export default class ViewPost extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      posts: null,
       analytics: null,
       comments: Array(5).fill(0).map((item, i) => ({
         commenter: 'commenter vanity',

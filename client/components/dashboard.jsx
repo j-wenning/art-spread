@@ -22,6 +22,7 @@ export default class Dashboard extends React.Component {
     this.goToSwitchProfile = this.goToSwitchProfile.bind(this);
     this.pendingPost = this.pendingPost.bind(this);
     this.alreadyPosted = this.alreadyPosted.bind(this);
+    this.goToViewPost = this.goToViewPost.bind(this);
   }
 
   getProfile() {
@@ -55,7 +56,11 @@ export default class Dashboard extends React.Component {
   goToSwitchProfile() {
     this.props.setView('switchProfile', {});
   }
-      
+
+  goToViewPost(event) {
+    this.props.setView('viewPost', {});
+  }
+
   pendingPost() {
     this.setState({
       switch: false
@@ -73,7 +78,7 @@ export default class Dashboard extends React.Component {
     const pfn = this.state.profile.name || 'profile';
     const posts = this.state.posts.map(post => <PostPreview key={post.poolId} post={post}/>);
     const pendingPosts = this.state.posts.map(post => <PendingPost key={post.poolId} post={post}/>);
-        
+
     if (this.state.switch) {
       return (
         <div>
@@ -106,7 +111,7 @@ export default class Dashboard extends React.Component {
               <h2 className="text-custom-primary" onClick={this.pendingPost}>Pending Posts</h2>
             </div>
           </div>
-          <div className="list overflow-auto">
+          <div onClick={this.goToViewPost} className="list overflow-auto">
             {posts}
           </div>
         </div>

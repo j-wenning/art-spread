@@ -31,7 +31,7 @@ export default class PendingPost extends React.Component {
             {this.props.post.body.substr(0, 30) +
               (this.props.post.body.length > 30 ? '...' : '')}
           </p>
-          <p className="text-primary text-plate">
+          <p className="post-preview-fields text-primary text-plate">
             {this.props.post.tags.substr(0, 30) +
               (this.props.post.tags.length > 30 ? '...' : '')}
           </p>
