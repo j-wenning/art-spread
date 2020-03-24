@@ -58,6 +58,21 @@ class ModifyProfile extends React.Component {
               onChange={this.handleChange}
             />
           </div>
+          <div className="dropdown mt-4">
+            <div className="text-custom-primary ml-1 mb-1 mt-1">
+              Profile accounts
+            </div>
+            <button className="w-75 btn btn-custom text-custom-primary d-flex justify-content-around
+            dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">
+              dissociated accounts
+            </button>
+            <div className="dropdown-menu" aria-labelledby="dropdownMenu2">
+              <button className="dropdown-item" type="button">account 1</button>
+              <button className="dropdown-item" type="button">account 2</button>
+              <button className="dropdown-item" type="button">account 3</button>
+            </div>
+          </div>
         </form>
       </div>
     );
