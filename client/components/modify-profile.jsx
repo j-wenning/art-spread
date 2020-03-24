@@ -9,6 +9,7 @@ class ModifyProfile extends React.Component {
         name: 'account name',
         accountId: i
       })),
+      lists: [],
       profile: {
         picture: null
       },
@@ -66,7 +67,11 @@ class ModifyProfile extends React.Component {
     fetch('/api/accounts')
       .then(res => res.json())
       .then(data => {
-        this.setState({ accounts: data });
+        if (data.associated) {
+          this.setState({ accounts: data });
+        } else if (!data.associated) {
+          this.setState({ lists: data });
+        }
       });
   }
 
