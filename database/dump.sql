@@ -26,6 +26,7 @@ ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "account-profile
 ALTER TABLE ONLY public.users DROP CONSTRAINT users_username_key;
 ALTER TABLE ONLY public.users DROP CONSTRAINT users_pk;
 ALTER TABLE ONLY public.users DROP CONSTRAINT users_password_key;
+ALTER TABLE ONLY public.accounts DROP CONSTRAINT "unique-accounts";
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "unique-account-profile-links";
 ALTER TABLE ONLY public.publications DROP CONSTRAINT publications_pk;
 ALTER TABLE ONLY public.profiles DROP CONSTRAINT profiles_pk;
@@ -122,6 +123,7 @@ ALTER SEQUENCE public."account-profile-links_linkId_seq" OWNED BY public."accoun
 
 CREATE TABLE public.accounts (
     "accountId" integer NOT NULL,
+    type character varying(255) NOT NULL,
     name character varying(255) NOT NULL,
     access character varying(255) NOT NULL,
     refresh character varying(255),
@@ -190,7 +192,7 @@ ALTER SEQUENCE public."posts_postId_seq" OWNED BY public.posts."postId";
 CREATE TABLE public.profiles (
     "profileId" integer NOT NULL,
     name character varying(255) NOT NULL,
-    "imgPath" character varying(255) NOT NULL,
+    "imgPath" character varying(255),
     "userId" integer NOT NULL
 );
 
@@ -325,6 +327,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN "userId" SET DEFAULT nextval('public.
 --
 
 COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM stdin;
+1	1	1
 \.
 
 
@@ -332,7 +335,8 @@ COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM st
 -- Data for Name: accounts; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.accounts ("accountId", name, access, refresh, expiration, "userId") FROM stdin;
+COPY public.accounts ("accountId", type, name, access, refresh, expiration, "userId") FROM stdin;
+1	reddit	Art_Spread	466923361867-Dhl_YJ7J7D0ta6QvsZcl2f-_4TM	466923361867-9PYSC-eYUenfF2729C3Nn6B6CLc	1585002260789	1
 \.
 
 
@@ -349,6 +353,7 @@ COPY public.posts ("postId", body, tags, "imgPath", "profileId") FROM stdin;
 --
 
 COPY public.profiles ("profileId", name, "imgPath", "userId") FROM stdin;
+1	reddit-test	\N	1
 \.
 
 
@@ -365,6 +370,7 @@ COPY public.publications ("publicationId", url, "accountId", "postId") FROM stdi
 --
 
 COPY public.users ("userId", username, password) FROM stdin;
+1	admin	admin
 \.
 
 
@@ -372,14 +378,14 @@ COPY public.users ("userId", username, password) FROM stdin;
 -- Name: account-profile-links_linkId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 1, false);
+SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 3, true);
 
 
 --
 -- Name: accounts_accountId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."accounts_accountId_seq"', 1, false);
+SELECT pg_catalog.setval('public."accounts_accountId_seq"', 6, true);
 
 
 --
@@ -393,7 +399,7 @@ SELECT pg_catalog.setval('public."posts_postId_seq"', 1, false);
 -- Name: profiles_profileId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."profiles_profileId_seq"', 1, false);
+SELECT pg_catalog.setval('public."profiles_profileId_seq"', 1, true);
 
 
 --
@@ -407,7 +413,7 @@ SELECT pg_catalog.setval('public."publications_publicationId_seq"', 1, false);
 -- Name: users_userId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."users_userId_seq"', 1, false);
+SELECT pg_catalog.setval('public."users_userId_seq"', 1, true);
 
 
 --
@@ -464,6 +470,14 @@ ALTER TABLE ONLY public.publications
 
 ALTER TABLE ONLY public."account-profile-links"
     ADD CONSTRAINT "unique-account-profile-links" UNIQUE ("accountId", "profileId");
+
+
+--
+-- Name: accounts unique-accounts; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts
+    ADD CONSTRAINT "unique-accounts" UNIQUE (type, name);
 
 
 --
