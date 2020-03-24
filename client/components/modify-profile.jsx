@@ -12,10 +12,47 @@ class ModifyProfile extends React.Component {
       profile: {
         picture: null
       },
+      vanityHandle: '',
+      bio: '',
       image: ''
     };
     this.handleAvatar = this.handleAvatar.bind(this);
     this.getAccounts = this.getAccounts.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.goToDashboard = this.goToDashboard.bind(this);
+  }
+
+  goToDashboard(event) {
+    this.props.setView('dashboard', {});
+  }
+
+  handleChange(event) {
+    this.setState({ [event.target.id]: event.target.value });
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    const newSubmission = {
+      vanityHandle: this.state.vanityHandle,
+      bio: this.state.bio
+    };
+    const formData = new FormData();
+    formData.append('image', this.state.image);
+    fetch(`/api/profiles/${formData}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    }).then(res => {
+      console.warn(res);
+    });
+    this.goToDashboard();
+    this.props.setProfile(newSubmission);
+    this.setState({
+      vanityHandle: '',
+      bio: ''
+    });
+    event.currentTarget.reset();
   }
 
   handleAvatar(event) {
