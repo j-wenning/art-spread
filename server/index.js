@@ -111,87 +111,167 @@ app.get('/api/accounts/:profileId', (req, res, next) => {
     .catch(err => next(err));
 });
 
-app.get('/api/posts/:profileId', (req, res, next) => {
+// app.get('/api/posts/:profileId', (req, res, next) => {
+//   const userId = req.session.userId;
+//   const profileId = req.session.currentProfile;
+//   const postId = Number(req.body.postId);
+//   const postCount = Number(req.body.postCount);
+//   const posts = { posts: [], analytics: [] };
+
+//   if (!userId) throw new ClientError('Requires userId', 403);
+//   else if (!profileId) throw new ClientError('Requires profileId', 400);
+//   else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+//   else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
+//   else if (postId < 1) throw new ClientError('Invalid postId', 400);
+//   else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
+//   db.query(`
+//       SELECT "postId",
+//              "body",
+//              "tags",
+//              "imgPath"
+//         FROM "posts"
+//        WHERE "postId" >= $1 AND "profileId" = $2
+//     ORDER BY "postId" DESC
+//        LIMIT $3;
+//   `, [postId, profileId, postCount])
+//     .then(result => {
+//       if (result.rowCount === 0) throw new ClientError('Posts do not exist.', 404);
+//       posts.posts = result.rows;
+//       return db.query(`
+//         WITH "posts_cte" AS (
+//             SELECT "postId"
+//               FROM "posts"
+//              WHERE "postId" >= $1 AND "profileId" = $2
+//           ORDER BY "postId" DESC
+//             LIMIT $3
+//         )
+//         SELECT "po"."postId",
+//                "pu"."publicationId",
+//                "pu"."url",
+//                "a" ."type"
+//         FROM "posts_cte" AS "po"
+//         JOIN "publications" AS "pu" USING ("postId")
+//         JOIN "accounts" AS "a" USING ("accountId")
+//         ORDER BY "po"."postId", "pu"."publicationId" DESC;
+//   `, [postId, profileId, postCount]);
+//     })
+//     .then(result => {
+//       const fetches = [];
+//       posts.analytics = result.rows.map(item => {
+//         let req;
+//         if (item.type === 'reddit') {
+//           req = new Promise((resolve, reject) => {
+//             fetch('url')
+//               .then(res => res.json())
+//               .then(data => {
+//                 resolve(data);
+//               })
+//               .catch(err => reject(err));
+//           });
+//           fetches.push(req);
+//           return req;
+//         }
+//       });
+//       return Promise.all(fetches);
+//     })
+//     .then(data => res.send(posts))
+//     .catch(err => next(err));
+// });
+
+app.get('/api/account/refresh', (req, res, next) => {
   const userId = req.session.userId;
   const profileId = req.session.currentProfile;
-  const postId = Number(req.body.postId);
-  const postCount = Number(req.body.postCount);
-  const posts = { posts: [], analytics: [] };
 
   if (!userId) throw new ClientError('Requires userId', 403);
   else if (!profileId) throw new ClientError('Requires profileId', 400);
-  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
-  else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
-  else if (postId < 1) throw new ClientError('Invalid postId', 400);
-  else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
   db.query(`
-      SELECT "postId",
-             "body",
-             "tags",
-             "imgPath"
-        FROM "posts"
-       WHERE "postId" >= $1 AND "profileId" = $2
-    ORDER BY "postId" DESC
-       LIMIT $3;
-  `, [postId, profileId, postCount])
+    SELECT "accountId",
+           "refresh",
+           "expiration",
+           "type"
+      FROM "accounts"
+      JOIN "account-profile-links" USING ("accountId")
+     WHERE "profileId" = $1;
+  `, [profileId])
     .then(result => {
-      if (result.rowCount === 0) throw new ClientError('Posts do not exist.', 404);
-      posts.posts = result.rows;
-      return db.query(`
-        WITH "posts_cte" AS (
-            SELECT "postId"
-              FROM "posts"
-             WHERE "postId" >= $1 AND "profileId" = $2
-          ORDER BY "postId" DESC
-            LIMIT $3
-        )
-        SELECT "po"."postId",
-               "pu"."publicationId",
-               "pu"."url",
-               "a" ."type"
-        FROM "posts_cte" AS "po"
-        JOIN "publications" AS "pu" USING ("postId")
-        JOIN "accounts" AS "a" USING ("accountId")
-        ORDER BY "po"."postId", "pu"."publicationId" DESC;
-  `, [postId, profileId, postCount]);
-    })
-    .then(result => {
-      const fetches = [];
-      posts.analytics = result.rows.map(item => {
-        let req;
+      if (result.rowCount === 0) return 0;
+      result.rows = result.rows.map(item => {
         if (item.type === 'reddit') {
-          req = new Promise((resolve, reject) => {
-            fetch('url')
+          if (item.expiration - Date.now() < 300000) {
+            return fetch('https://www.reddit.com/api/v1/access_token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from('EmIwQa2jhiAeCw:1obrKsmmOTNUA7czIeS5SEBmY4A').toString('base64')
+              },
+              body: [
+                'grant_type=refresh_token',
+                'refresh_token=' + item.refresh
+              ].join('&')
+            })
               .then(res => res.json())
-              .then(data => {
-                resolve(data);
-              })
-              .catch(err => reject(err));
-          });
-          fetches.push(req);
-          return req;
+              .then(data => db.query(`
+              UPDATE "accounts"
+                 SET "access" = $1, "expiration" = $2
+               WHERE "accountId" = $3;
+            `, [
+                data.access_token,
+                (data.expires_in * 1000 + Date.now()).toString(),
+                item.accountId
+              ]))
+              .catch(err => next(err));
+          }
         }
       });
-      return Promise.all(fetches);
-    })
-    .then(data => res.send(posts))
+      return Promise.all(result.rows);
+    }).then(res.sendStatus(200))
     .catch(err => next(err));
 });
 
-app.get('/api/account/reddit/request', (req, res, next) => {
+app.post('/api/publish', (req, res, next) => {
+  // const userId = req.session.userId;
+  // const profileId = req.session.currentProfile;
+
+  // if (!userId) throw new ClientError('Requires userId', 403);
+  // else if (!profileId) throw new ClientError('Requires profileId', 400);
+  fetch('https://oauth.reddit.com/api/submit', {
+    method: 'POST',
+    // headers: { Authorization: 'Bearer ' + account.access_token }
+    headers: {
+      Authorization: 'Bearer ' + '466923361867-JIjMHlkFlHvm7UR8N-dzZPmJf-A',
+      'Content-Type': 'application/json'
+    },
+    body: {
+      // api_type: 'json',
+      sr: 'u/Art_Spread',
+      // title: 'test title', // insert this from tables data
+      kind: 'image'
+      // nsfw: false,
+      // resubmit: false,
+      // text: 'testing stuff out here boiz in the body'
+    }
+  }).then(res => res.json())
+    .then(data => res.send(data));
+});
+
+app.get('/api/account/request/:service', (req, res, next) => {
   const userId = req.session.userId;
+  const service = req.params.service;
 
   if (!userId) throw new ClientError('Requires userId', 403);
-  req.session.authState = userId + Buffer.from((Math.random() * 999999).toString()).toString('base64');
-  res.redirect('https://www.reddit.com/api/v1/authorize?' +
-    [
-      'response_type=code',
-      'client_id=EmIwQa2jhiAeCw',
-      'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
-      'scope=identity+mysubreddits+submit+read',
-      'state=' + req.session.authState,
-      'duration=permanent'
-    ].join('&'));
+  if (!service) throw new ClientError('Requires service', 400);
+  if (service === 'reddit') {
+    req.session.authState = userId + Buffer.from((Math.random() * 999999).toString()).toString('base64');
+    res.redirect('https://www.reddit.com/api/v1/authorize?' +
+      [
+        'response_type=code',
+        'client_id=EmIwQa2jhiAeCw',
+        'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
+        'scope=identity+mysubreddits+submit+read+edit',
+        'state=' + req.session.authState,
+        'duration=permanent'
+      ].join('&'));
+  } else res.status(404).send('Invalid service');
 });
 
 app.get('/api/account/reddit/authorize', (req, res, next) => {
@@ -285,7 +365,7 @@ app.post('/api/account/reddit/authorize', (req, res, next) => {
       data.name,
       account.access_token,
       account.refresh_token,
-      (account.expires_in + Date.now()).toString(),
+      (account.expires_in * 1000 + Date.now()).toString(),
       userId,
       profileId
     ]))
