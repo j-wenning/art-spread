@@ -163,8 +163,9 @@ h1 {
 
 .profile-name {
   border-radius: 10px;
+}
 
-.pendingIcon {
+.pending-icon {
   font-weight: bold;
   color: maroon;
   position: absolute;
