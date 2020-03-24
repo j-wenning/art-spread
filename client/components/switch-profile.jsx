@@ -11,6 +11,9 @@ export default class Settings extends React.Component {
         profileId: i
       }))
     };
+    this.getProfiles = this.getProfiles.bind(this);
+    this.deleteProfile = this.deleteProfile.bind(this);
+    this.createProfile = this.createProfile.bind(this);
   }
 
   getProfiles() {
@@ -53,6 +56,7 @@ export default class Settings extends React.Component {
           profiles: this.state.profiles.concat(data)
         });
       });
+    this.goToModifyProfile();
   }
 
   goToModifyProfile(event) {
@@ -69,7 +73,7 @@ export default class Settings extends React.Component {
         <div className="row">
           <div className="col">
             <div className="prof-list overflow-auto">
-              {this.state.profiles.map(profile => {
+              {this.getProfiles && this.state.profiles.map(profile => {
                 return (
                   <ProfileItem
                     key={profile.profileId}
@@ -84,7 +88,7 @@ export default class Settings extends React.Component {
         </div>
         <div className="row">
           <div className="mt-2 d-flex flex-row w-100 justify-content-center">
-            <button onClick={this.goToModifyProfile} className="btn btn-custom text-custom-primary">
+            <button onClick={this.createProfile} className="btn btn-custom text-custom-primary">
               Create Profile
             </button>
           </div>
