@@ -57,6 +57,13 @@ h1 {
   height: 125px;
 }
 
+.profile-picture-small {
+  border-radius: 100%;
+  border: 2px solid rgb(73, 73, 105);
+  background-color: rgb(238, 238, 238);
+  height: 45px;
+}
+
 .brand {
   font-family: "PoiretOne";
 }
