@@ -170,8 +170,8 @@ h1 {
   color: maroon;
   position: absolute;
   font-size: 145%;
-  top: 20%;
-  left: 43.5%;
+  top: 18%;
+  left: 82%;
   transform: translate(-50%, -50%)
 }
 
@@ -181,4 +181,8 @@ h1 {
     border-color: rgb(238, 238, 238);
     border-image: initial;
     border-radius: 50% 50% 50% 50%;
+}
+
+.pending-icon-relative {
+    position: relative;
 }
