@@ -1,5 +1,6 @@
 import React from 'react';
 import AccountItem from './account-item';
+import ListItem from './list-item';
 
 class ModifyProfile extends React.Component {
   constructor(props) {
@@ -11,7 +12,7 @@ class ModifyProfile extends React.Component {
       })),
       lists: Array(5).fill(0).map((account, i) => ({
         name: 'account name',
-        accountId: i
+        listId: i
       })),
       currentPicture: null,
       vanityHandle: '',
@@ -128,13 +129,13 @@ class ModifyProfile extends React.Component {
             aria-haspopup="true" aria-expanded="false">
               dissociated accounts
             </button>
-            <div className="dropdown-menu" aria-labelledby="dropdownMenu2">
-              {this.state.lists.map(account => {
+            <div onChange={this.handleChange} className="text-custom-primary dropdown-menu" aria-labelledby="dropdownMenu2">
+              {this.state.lists.map(list => {
                 return (
-                  <AccountItem
-                    key={account.accountId}
-                    name={account.name}
-                    id={account.accountId}
+                  <ListItem
+                    key={list.accountId}
+                    name={list.name}
+                    id={list.accountId}
                   />);
               })
               }
@@ -157,7 +158,7 @@ class ModifyProfile extends React.Component {
           </div>
           <div className="row">
             <div className="mt-2 d-flex flex-row w-100 justify-content-end mr-4">
-              <button className="btn btn-custom text-custom-primary">
+              <button typ="submit" className="btn btn-custom text-custom-primary">
                Submit
               </button>
             </div>
