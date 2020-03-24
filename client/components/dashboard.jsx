@@ -44,6 +44,7 @@ export default class Dashboard extends React.Component {
 
   componentDidMount() {
     this.getProfile();
+    this.getPosts();
   }
 
   goToCreatePost() {
