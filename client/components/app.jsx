@@ -7,6 +7,7 @@ import Settings from './settings';
 import ViewPost from './view-post';
 import SwitchProfile from './switch-profile';
 import ModifyProfile from './modify-profile';
+import ViewComments from './view-comments';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -25,7 +26,7 @@ export default class App extends React.Component {
     this.setState({
       view: {
         name: name,
-        params
+        params: params
       }
     });
   }
@@ -91,6 +92,13 @@ export default class App extends React.Component {
           <div className="app">
             <Header setView={this.setView} title={this.state.view.name} />
             <ModifyProfile setView={this.setView} />
+          </div>
+        );
+      case 'viewComments':
+        return (
+          <div className="app">
+            <Header setView={this.setView} title={this.state.view.name} />
+            <ViewComments setView={this.setView} />
           </div>
         );
     }

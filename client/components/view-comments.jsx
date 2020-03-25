@@ -73,7 +73,7 @@ export default class ViewComments extends Component {
       .then(res => {
         console.warn(res);
       });
-    this.props.sendReply(newReply);
+    this.props.setView('viewPost', {});
     this.setState({
       reply: ''
     });
@@ -82,11 +82,11 @@ export default class ViewComments extends Component {
 
   handleClick(commentId) {
     this.setState(() => {
-      const [...comments] = this.state.comments;
-      const index = comments.findIndex(c =>
+      const [...commentThread] = this.state.commentThread;
+      const index = commentThread.findIndex(c =>
         c.commentId === commentId);
-      comments[index].liked = !comments[index].liked;
-      return comments;
+      commentThread[index].liked = !commentThread[index].liked;
+      return commentThread;
     });
   }
 
@@ -118,7 +118,7 @@ export default class ViewComments extends Component {
           <div className="post-body p-2 text-custom-primary ml-1 mb-1 mt-1">
             {this.state.comment.commentBody}
           </div>
-          <i onClick={this.handleClick(this.state.comment.commentId)}
+          <i onClick={() => this.handleClick(this.state.comment.commentId)}
             className={`ml-5 ${this.state.comment.liked ? 'liked' : 'unliked'} far fa-heart fa-2x`}></i>
         </div>
         <div className="w-100">
