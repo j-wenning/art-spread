@@ -50,10 +50,7 @@ function getCurrentProfile(req, res, next) {
   const userId = req.session.userId;
   const profileId = req.session.currentProfile;
 
-  if (profileId) {
-    res.status(200).send(profileId);
-    return;
-  }
+  if (profileId) return res.json(profileId);
   db.query(`
       SELECT "profileId"
         FROM "profiles"
@@ -62,9 +59,9 @@ function getCurrentProfile(req, res, next) {
        LIMIT 1;
   `, [userId])
     .then(result => {
-      const profileId = result.rows[0].profileId;
-      req.session.currentProfile = profileId;
-      res.json(profileId || null);
+      const newProfileId = result.rows[0].profileId;
+      req.session.currentProfile = newProfileId;
+      res.json(newProfileId || null);
     })
     .catch(err => next(err));
 }
