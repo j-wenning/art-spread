@@ -5,11 +5,30 @@ export default class ViewComments extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      comment: null,
-      commenter: '',
+      comment: {
+        commenter: 'sample vanity',
+        liked: false,
+        commentBody: 'sample comment',
+        commentId: 'sample'
+      },
       reply: '',
-      commentThread: []
+      commentThread: Array(5).fill(0).map((item, i) => ({
+        commenter: 'commenter vanity',
+        liked: false,
+        commentBody: 'comment body',
+        commentId: i
+      }))
     };
+  }
+
+  handleClick(commentId) {
+    this.setState(() => {
+      const [...comments] = this.state.comments;
+      const index = comments.findIndex(c =>
+        c.commentId === commentId);
+      comments[index].liked = !comments[index].liked;
+      return comments;
+    });
   }
 
   createCommentsThread() {
@@ -34,12 +53,14 @@ export default class ViewComments extends Component {
       <div className="container">
         <div className="row">
           <img className="profile-picture-small" src="./assets/images/default-profile.svg"/>
-          <h5 className="w-75 p-2 mb-3 row text-custom-primary commenter">{this.state.commenter}</h5>
+          <h5 className="w-75 p-2 mb-3 row text-custom-primary commenter">{this.state.comment.commenter}</h5>
         </div>
         <div className="w-100">
           <div className="post-body p-2 text-custom-primary ml-1 mb-1 mt-1">
-            {this.state.comment}
+            {this.state.comment.commentBody}
           </div>
+          <i onClick={this.handleClick(this.state.comment.commentId)}
+            className={`ml-5 ${this.state.comment.liked ? 'liked' : 'unliked'} far fa-heart fa-2x`}></i>
         </div>
         <div className="w-100">
           <form className="form" onSubmit={this.handleSubmit}>
