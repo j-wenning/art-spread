@@ -19,6 +19,65 @@ export default class ViewComments extends Component {
         commentId: i
       }))
     };
+    this.handleChange = this.handleChange.bind(this);
+    this.handleClick = this.handleClick.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.createCommentsThread = this.createCommentsThread.bind(this);
+  }
+
+  componentDidMount() {
+    this.getComment();
+    this.getCommentThread();
+  }
+
+  getComment() {
+    const commentId = this.props.commentId;
+    fetch(`/api/comments/${commentId}`)
+      .then(res => res.json())
+      .then(data => {
+        this.setState({
+          comment: data
+        });
+      });
+  }
+
+  getCommentThread() {
+    const commentId = this.props.commentId;
+    fetch(`/api/comments/${commentId}`)
+      .then(res => res.json())
+      .then(data => {
+        this.setState({
+          commentThread: data
+        });
+      });
+  }
+
+  handleChange(e) {
+    this.setState({
+      [e.target.id]: e.target.value
+    });
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    const commentId = this.props.commentId;
+    const newReply = {
+      reply: this.state.reply
+    };
+    const fetchParams = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newReply)
+    };
+    fetch(`/api/comments/${commentId}`, fetchParams)
+      .then(res => {
+        console.warn(res);
+      });
+    this.props.sendReply(newReply);
+    this.setState({
+      reply: ''
+    });
+    e.currentTarget.reset();
   }
 
   handleClick(commentId) {
