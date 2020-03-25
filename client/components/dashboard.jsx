@@ -112,10 +112,10 @@ export default class Dashboard extends React.Component {
           <div className="row">
             <ul className="ml-3 nav nav-pills">
               <li className="nav-item">
-                <a className="nav-link text-custom-primary active" onClick={this.alreadyPosted}>Posts</a>
+                <a className="nav-link active" onClick={this.alreadyPosted}>Posts</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link text-custom-primary" onClick={this.pendingPost}>Pending Posts</a>
+                <a className="nav-link" onClick={this.pendingPost}>Pending Posts</a>
               </li>
             </ul>
           </div>
@@ -160,10 +160,10 @@ export default class Dashboard extends React.Component {
           <div className="row">
             <ul className="ml-3 nav nav-pills">
               <li className="nav-item">
-                <a className="nav-link text-custom-primary" onClick={this.alreadyPosted}>Posts</a>
+                <a className="nav-link" onClick={this.alreadyPosted}>Posts</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link text-custom-primary active" onClick={this.pendingPost}>Pending Posts</a>
+                <a className="nav-link active" onClick={this.pendingPost}>Pending Posts</a>
               </li>
             </ul>
           </div>
