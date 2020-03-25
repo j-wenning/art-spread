@@ -111,29 +111,27 @@ export default class ViewComments extends Component {
     return (
       <div className="container">
         <div className="row">
-          <img className="profile-picture-small" src="./assets/images/default-profile.svg"/>
-          <h5 className="w-75 p-2 mb-3 row text-custom-primary commenter">{this.state.comment.commenter}</h5>
+          <img className="profile-picture-small ml-2 mr-3" src="./assets/images/default-profile.svg"/>
+          <h5 className="w-75 p-2 mb-3 ml-2 row text-custom-primary commenter">{this.state.comment.commenter}</h5>
         </div>
         <div className="w-100">
-          <div className="post-body p-2 text-custom-primary ml-1 mb-1 mt-1">
+          <div className="post-body p-2 text-custom-primary ml-1 mb-3 mt-1">
             {this.state.comment.commentBody}
           </div>
-          <i onClick={() => this.handleClick(this.state.comment.commentId)}
-            className={`ml-5 ${this.state.comment.liked ? 'liked' : 'unliked'} far fa-heart fa-2x`}></i>
         </div>
         <div className="w-100">
           <form className="form" onSubmit={this.handleSubmit}>
-            <div className="form-row">
+            <div className="form-row ml-1">
               <label htmlFor="reply">Reply</label>
             </div>
             <textarea
               id="reply"
-              className="generalText form-row form-control"
+              className="generalText reply form-row form-control-lg mb-2 ml-1"
               type="text"
               placeholder="Reply here"
               onChange={this.handleChange}/>
             <div className="form-row">
-              <button type="submit" onClick={this.props.submitReply} className="btn btn-custom text-custom-primary">Reply</button>
+              <button type="submit" onClick={this.props.submitReply} className="btn btn-custom text-custom-primary reply-button mb-2">Reply</button>
             </div>
           </form>
         </div>
