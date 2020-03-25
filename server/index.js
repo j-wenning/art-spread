@@ -249,16 +249,20 @@ function postPublish(req, res, next) {
                     'text=' + post.body,
                     'url=' + data.data.link
                   ].join('&')
-                });
+                }).then(res => res.json())
+                  .then(data => {
+                    db.query(`
+                    INSERT INTO "publications"("url", "accountId", "postId")
+                         VALUES ($1, $2, $3);
+                  `, [data.json.data.url, item.accountId, postId]);
+                  }).catch(err => console.error(err));
               }
             });
             return Promise.all(result.rows);
           }).then(() => res.sendStatus(201))
           .catch(err => next(err));
-      })
-      .catch(err => next(err));
-  })
-    .catch(err => next(err));
+      }).catch(err => next(err));
+  }).catch(err => next(err));
 }
 
 function postCurrentProfile(req, res, next) {
