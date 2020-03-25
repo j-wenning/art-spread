@@ -22,7 +22,7 @@ export default class PostPreview extends React.Component {
             alt=""
           />
         </div>
-        <div className="col-8">
+        <div className="col-7 ml-3">
           <p className="post-preview-fields text-custom-primary text-plate">
             {this.props.post.body.substr(0, 30) +
               (this.props.post.body.length > 30 ? '...' : '')}
