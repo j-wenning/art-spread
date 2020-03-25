@@ -5,6 +5,7 @@ export default class ViewPost extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      posts: null,
       analytics: null,
       comments: Array(5).fill(0).map((item, i) => ({
         commenter: 'commenter vanity',
@@ -69,6 +70,7 @@ export default class ViewPost extends React.Component {
     const comments = this.state.comments.map(comment => <CommentItem
       key={comment.commentId} commenter={comment.commenter}
       like={() => this.handleClick(comment.commentId)}
+      setView={() => this.props.setView('viewComments', {})}
       liked={comment.liked}
       commentBody={comment.commentBody} id={comment.commentId}/>);
     return (

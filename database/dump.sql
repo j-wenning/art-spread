@@ -18,11 +18,14 @@ SET row_security = off;
 
 ALTER TABLE ONLY public.publications DROP CONSTRAINT publications_fk1;
 ALTER TABLE ONLY public.publications DROP CONSTRAINT publications_fk0;
-ALTER TABLE ONLY public.profiles DROP CONSTRAINT profiles_fk0;
 ALTER TABLE ONLY public.posts DROP CONSTRAINT posts_fk0;
+ALTER TABLE ONLY public.pools DROP CONSTRAINT pools_fk0;
+ALTER TABLE ONLY public.images DROP CONSTRAINT images_fk0;
 ALTER TABLE ONLY public.accounts DROP CONSTRAINT accounts_fk0;
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "account-profile-links_fk1";
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "account-profile-links_fk0";
+ALTER TABLE ONLY public."account-profile links" DROP CONSTRAINT "account-profile links_fk1";
+ALTER TABLE ONLY public."account-profile links" DROP CONSTRAINT "account-profile links_fk0";
 ALTER TABLE ONLY public.users DROP CONSTRAINT users_username_key;
 ALTER TABLE ONLY public.users DROP CONSTRAINT users_pk;
 ALTER TABLE ONLY public.users DROP CONSTRAINT users_password_key;
@@ -30,15 +33,20 @@ ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "unique-account-
 ALTER TABLE ONLY public.publications DROP CONSTRAINT publications_pk;
 ALTER TABLE ONLY public.profiles DROP CONSTRAINT profiles_pk;
 ALTER TABLE ONLY public.posts DROP CONSTRAINT posts_pk;
-ALTER TABLE ONLY public.posts DROP CONSTRAINT "posts_imgPath_key";
+ALTER TABLE ONLY public.pools DROP CONSTRAINT pools_pk;
+ALTER TABLE ONLY public.images DROP CONSTRAINT images_pk;
 ALTER TABLE ONLY public.accounts DROP CONSTRAINT accounts_pk;
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "account-profile-links_pk";
+ALTER TABLE ONLY public."account-profile links" DROP CONSTRAINT "account-profile links_pk";
 ALTER TABLE public.users ALTER COLUMN "userId" DROP DEFAULT;
 ALTER TABLE public.publications ALTER COLUMN "publicationId" DROP DEFAULT;
 ALTER TABLE public.profiles ALTER COLUMN "profileId" DROP DEFAULT;
 ALTER TABLE public.posts ALTER COLUMN "postId" DROP DEFAULT;
+ALTER TABLE public.pools ALTER COLUMN "poolId" DROP DEFAULT;
+ALTER TABLE public.images ALTER COLUMN "imageId" DROP DEFAULT;
 ALTER TABLE public.accounts ALTER COLUMN "accountId" DROP DEFAULT;
 ALTER TABLE public."account-profile-links" ALTER COLUMN "linkId" DROP DEFAULT;
+ALTER TABLE public."account-profile links" ALTER COLUMN "linkId" DROP DEFAULT;
 DROP SEQUENCE public."users_userId_seq";
 DROP TABLE public.users;
 DROP SEQUENCE public."publications_publicationId_seq";
@@ -47,10 +55,16 @@ DROP SEQUENCE public."profiles_profileId_seq";
 DROP TABLE public.profiles;
 DROP SEQUENCE public."posts_postId_seq";
 DROP TABLE public.posts;
+DROP SEQUENCE public."pools_poolId_seq";
+DROP TABLE public.pools;
+DROP SEQUENCE public."images_imageId_seq";
+DROP TABLE public.images;
 DROP SEQUENCE public."accounts_accountId_seq";
 DROP TABLE public.accounts;
 DROP SEQUENCE public."account-profile-links_linkId_seq";
 DROP TABLE public."account-profile-links";
+DROP SEQUENCE public."account-profile links_linkId_seq";
+DROP TABLE public."account-profile links";
 DROP EXTENSION plpgsql;
 DROP SCHEMA public;
 --
@@ -84,6 +98,37 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET default_tablespace = '';
 
 SET default_with_oids = false;
+
+--
+-- Name: account-profile links; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public."account-profile links" (
+    "linkId" integer NOT NULL,
+    "accountId" integer NOT NULL,
+    "profileId" integer NOT NULL
+);
+
+
+--
+-- Name: account-profile links_linkId_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public."account-profile links_linkId_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: account-profile links_linkId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public."account-profile links_linkId_seq" OWNED BY public."account-profile links"."linkId";
+
 
 --
 -- Name: account-profile-links; Type: TABLE; Schema: public; Owner: -
@@ -123,9 +168,7 @@ ALTER SEQUENCE public."account-profile-links_linkId_seq" OWNED BY public."accoun
 CREATE TABLE public.accounts (
     "accountId" integer NOT NULL,
     name character varying(255) NOT NULL,
-    access character varying(255) NOT NULL,
-    refresh character varying(255),
-    expiration character varying(255) NOT NULL,
+    "acountToken" character varying(255) NOT NULL,
     "userId" integer NOT NULL
 );
 
@@ -151,14 +194,76 @@ ALTER SEQUENCE public."accounts_accountId_seq" OWNED BY public.accounts."account
 
 
 --
+-- Name: images; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.images (
+    "imageId" integer NOT NULL,
+    "imagePath" character varying(255) NOT NULL,
+    "postId" integer NOT NULL
+);
+
+
+--
+-- Name: images_imageId_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public."images_imageId_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: images_imageId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public."images_imageId_seq" OWNED BY public.images."imageId";
+
+
+--
+-- Name: pools; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.pools (
+    "poolId" integer NOT NULL,
+    "postBody" character varying(255),
+    "postTags" character varying(255),
+    "profileId" integer NOT NULL
+);
+
+
+--
+-- Name: pools_poolId_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public."pools_poolId_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: pools_poolId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public."pools_poolId_seq" OWNED BY public.pools."poolId";
+
+
+--
 -- Name: posts; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.posts (
     "postId" integer NOT NULL,
-    body character varying(255),
-    tags character varying(255),
-    "imgPath" character varying(255) NOT NULL,
+    "postBody" character varying(255),
+    "postTags" character varying(255),
     "profileId" integer NOT NULL
 );
 
@@ -189,8 +294,8 @@ ALTER SEQUENCE public."posts_postId_seq" OWNED BY public.posts."postId";
 
 CREATE TABLE public.profiles (
     "profileId" integer NOT NULL,
-    name character varying(255) NOT NULL,
-    "imgPath" character varying(255) NOT NULL,
+    "profileName" character varying(255) NOT NULL,
+    "avatarPath" character varying(255) NOT NULL,
     "userId" integer NOT NULL
 );
 
@@ -279,6 +384,13 @@ ALTER SEQUENCE public."users_userId_seq" OWNED BY public.users."userId";
 
 
 --
+-- Name: account-profile links linkId; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."account-profile links" ALTER COLUMN "linkId" SET DEFAULT nextval('public."account-profile links_linkId_seq"'::regclass);
+
+
+--
 -- Name: account-profile-links linkId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -290,6 +402,20 @@ ALTER TABLE ONLY public."account-profile-links" ALTER COLUMN "linkId" SET DEFAUL
 --
 
 ALTER TABLE ONLY public.accounts ALTER COLUMN "accountId" SET DEFAULT nextval('public."accounts_accountId_seq"'::regclass);
+
+
+--
+-- Name: images imageId; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.images ALTER COLUMN "imageId" SET DEFAULT nextval('public."images_imageId_seq"'::regclass);
+
+
+--
+-- Name: pools poolId; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pools ALTER COLUMN "poolId" SET DEFAULT nextval('public."pools_poolId_seq"'::regclass);
 
 
 --
@@ -321,6 +447,14 @@ ALTER TABLE ONLY public.users ALTER COLUMN "userId" SET DEFAULT nextval('public.
 
 
 --
+-- Data for Name: account-profile links; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public."account-profile links" ("linkId", "accountId", "profileId") FROM stdin;
+\.
+
+
+--
 -- Data for Name: account-profile-links; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -332,7 +466,23 @@ COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM st
 -- Data for Name: accounts; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.accounts ("accountId", name, access, refresh, expiration, "userId") FROM stdin;
+COPY public.accounts ("accountId", name, "acountToken", "userId") FROM stdin;
+\.
+
+
+--
+-- Data for Name: images; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.images ("imageId", "imagePath", "postId") FROM stdin;
+\.
+
+
+--
+-- Data for Name: pools; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.pools ("poolId", "postBody", "postTags", "profileId") FROM stdin;
 \.
 
 
@@ -340,7 +490,13 @@ COPY public.accounts ("accountId", name, access, refresh, expiration, "userId") 
 -- Data for Name: posts; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.posts ("postId", body, tags, "imgPath", "profileId") FROM stdin;
+COPY public.posts ("postId", "postBody", "postTags", "profileId") FROM stdin;
+1	time to party	#itslit	1
+4	its all about that boba	#boba	4
+5	His palms are sweaty knees weak arms are heavy	#nervous	5
+12	my horn can pierce the sky - the officIe	#theoffice	4
+13	you get toilet paper, EVERYONE GETS TOILET PAPER!	#toiletpaper	1
+14	dont drop that dun dun dun	#dropit	5
 \.
 
 
@@ -348,7 +504,10 @@ COPY public.posts ("postId", body, tags, "imgPath", "profileId") FROM stdin;
 -- Data for Name: profiles; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.profiles ("profileId", name, "imgPath", "userId") FROM stdin;
+COPY public.profiles ("profileId", "profileName", "avatarPath", "userId") FROM stdin;
+1	JoliDali	./public/images/sali	1
+4	bobaBae	./public/images/BOBABAE	1
+5	DOYOUTHINK	./public/images/DOYOUTHINK	1
 \.
 
 
@@ -369,6 +528,13 @@ COPY public.users ("userId", username, password) FROM stdin;
 
 
 --
+-- Name: account-profile links_linkId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public."account-profile links_linkId_seq"', 1, false);
+
+
+--
 -- Name: account-profile-links_linkId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -383,17 +549,31 @@ SELECT pg_catalog.setval('public."accounts_accountId_seq"', 1, false);
 
 
 --
+-- Name: images_imageId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public."images_imageId_seq"', 1, false);
+
+
+--
+-- Name: pools_poolId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
+--
+
+SELECT pg_catalog.setval('public."pools_poolId_seq"', 1, false);
+
+
+--
 -- Name: posts_postId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."posts_postId_seq"', 1, false);
+SELECT pg_catalog.setval('public."posts_postId_seq"', 14, true);
 
 
 --
 -- Name: profiles_profileId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."profiles_profileId_seq"', 1, false);
+SELECT pg_catalog.setval('public."profiles_profileId_seq"', 11, true);
 
 
 --
@@ -408,6 +588,14 @@ SELECT pg_catalog.setval('public."publications_publicationId_seq"', 1, false);
 --
 
 SELECT pg_catalog.setval('public."users_userId_seq"', 1, false);
+
+
+--
+-- Name: account-profile links account-profile links_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."account-profile links"
+    ADD CONSTRAINT "account-profile links_pk" PRIMARY KEY ("linkId");
 
 
 --
@@ -427,11 +615,19 @@ ALTER TABLE ONLY public.accounts
 
 
 --
--- Name: posts posts_imgPath_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: images images_pk; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT "posts_imgPath_key" UNIQUE ("imgPath");
+ALTER TABLE ONLY public.images
+    ADD CONSTRAINT images_pk PRIMARY KEY ("imageId");
+
+
+--
+-- Name: pools pools_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pools
+    ADD CONSTRAINT pools_pk PRIMARY KEY ("poolId");
 
 
 --
@@ -491,6 +687,22 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: account-profile links account-profile links_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."account-profile links"
+    ADD CONSTRAINT "account-profile links_fk0" FOREIGN KEY ("accountId") REFERENCES public.accounts("accountId");
+
+
+--
+-- Name: account-profile links account-profile links_fk1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public."account-profile links"
+    ADD CONSTRAINT "account-profile links_fk1" FOREIGN KEY ("profileId") REFERENCES public.profiles("profileId");
+
+
+--
 -- Name: account-profile-links account-profile-links_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -515,19 +727,27 @@ ALTER TABLE ONLY public.accounts
 
 
 --
+-- Name: images images_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.images
+    ADD CONSTRAINT images_fk0 FOREIGN KEY ("postId") REFERENCES public.posts("postId");
+
+
+--
+-- Name: pools pools_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.pools
+    ADD CONSTRAINT pools_fk0 FOREIGN KEY ("profileId") REFERENCES public.profiles("profileId");
+
+
+--
 -- Name: posts posts_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.posts
     ADD CONSTRAINT posts_fk0 FOREIGN KEY ("profileId") REFERENCES public.profiles("profileId");
-
-
---
--- Name: profiles profiles_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.profiles
-    ADD CONSTRAINT profiles_fk0 FOREIGN KEY ("userId") REFERENCES public.users("userId");
 
 
 --
