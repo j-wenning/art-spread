@@ -214,3 +214,8 @@ h1 {
   height: 150px;
   border-radius: 10px;
 }
+
+.settings-input {
+  height: 60px;
+  border-radius: 10px;
+}

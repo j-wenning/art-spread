@@ -8,10 +8,16 @@ export default class Settings extends React.Component {
       accounts: Array(15).fill(0).map((account, i) => ({
         name: 'account name',
         accountId: i
-      }))
+      })),
+      username: false,
+      password: false,
+      account: false
     };
     this.getAccounts = this.getAccounts.bind(this);
     this.deleteAccount = this.deleteAccount.bind(this);
+    this.changeUsername = this.changeUsername.bind(this);
+    this.changePassword = this.changePassword.bind(this);
+    this.changeAccount = this.changeAccount.bind(this);
   }
 
   deleteAccount() {
@@ -38,19 +44,50 @@ export default class Settings extends React.Component {
       });
   }
 
+  changeUsername() {
+    this.setState({
+      username: !this.state.username
+    });
+  }
+
+  changePassword() {
+    this.setState({
+      password: !this.state.password
+    });
+  }
+
+  changeAccount() {
+    this.setState({
+      account: !this.state.account
+    });
+  }
+
   componentDidMount() {
     this.getAccounts();
   }
 
   render() {
+    const isUsernameButton = this.state.username;
+    // const isPasswordButton = this.state.password;
+    // const isAccountButton = this.state.account;
+    let field;
+    if (!isUsernameButton) {
+      field = <button className="col btn btn-custom text-custom-primary mb-4">
+       Change Username
+      </button>;
+    } else {
+      field = <div className="d-flex"><input className="settings-input mr-2" type="text" />
+        <button className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+      </div>;
+    }
     return (
       <div>
         <div className="row d-flex justify-content-center">
           <div className="col-7">
             <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
-              <button className="col btn btn-custom text-custom-primary mb-4">
-                Change Username
-              </button>
+              <div className="w-100 d-flex justify-content-center" onClick={this.changeUsername}>
+                {field}
+              </div>
               <button className="col btn btn-custom text-custom-primary mb-4">
                 Change Password
               </button>
