@@ -148,7 +148,7 @@ class ModifyProfile extends React.Component {
             aria-haspopup="true" aria-expanded="false">
               dissociated accounts
             </button>
-            <div onChange={this.handleChange} className="text-custom-primary dropdown-menu p-0"
+            <div onChange={this.handleChange} className="w-75 text-custom-primary dropdown-menu p-0"
               aria-labelledby="dropdownMenu2">
               {this.state.lists.map(list => {
                 return (
