@@ -8,7 +8,6 @@
 <body>
   <script>
     const searchParams = new URLSearchParams(window.location.search);
-    // console.log("searchParams", searchParams.get("code"));
     fetch("/api/account/reddit/authorize", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
