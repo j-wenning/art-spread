@@ -110,12 +110,14 @@ export default class Dashboard extends React.Component {
           </div>
 
           <div className="row">
-            <div className="col-8">
-              <h2 className="text-custom-primary" onClick={this.alreadyPosted}>Posts</h2>
-            </div>
-            <div className="col">
-              <h2 className="text-custom-primary" onClick={this.pendingPost}>Pending Posts</h2>
-            </div>
+            <ul className="ml-3 nav nav-pills">
+              <li className="nav-item">
+                <a className="nav-link selected" onClick={this.alreadyPosted}>Posts</a>
+              </li>
+              <li className="nav-item text-custom-primary">
+                <a className="nav-link" onClick={this.pendingPost}>Pending Posts</a>
+              </li>
+            </ul>
           </div>
           <div onClick={this.goToViewPost} className="list overflow-auto">
             {posts}
@@ -156,16 +158,14 @@ export default class Dashboard extends React.Component {
           </div>
 
           <div className="row">
-            <div className="col-8">
-              <h2 className="text-custom-primary" onClick={this.alreadyPosted}>
-                Posts
-              </h2>
-            </div>
-            <div className="col">
-              <h2 className="text-custom-primary" onClick={this.pendingPost}>
-                Pending Posts
-              </h2>
-            </div>
+            <ul className="ml-3 nav nav-pills">
+              <li className="nav-item text-custom-primary">
+                <a className="nav-link" onClick={this.alreadyPosted}>Posts</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link selected" onClick={this.pendingPost}>Pending Posts</a>
+              </li>
+            </ul>
           </div>
           <div className="list overflow-auto">{pendingPosts}</div>
         </div>

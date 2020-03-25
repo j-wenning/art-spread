@@ -200,3 +200,7 @@ h1 {
 .icon-color {
   color: black;
 }
+
+.selected {
+  background-color: rgb(238, 238, 238);
+}
