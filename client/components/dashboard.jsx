@@ -23,6 +23,7 @@ export default class Dashboard extends React.Component {
     this.pendingPost = this.pendingPost.bind(this);
     this.alreadyPosted = this.alreadyPosted.bind(this);
     this.goToViewPost = this.goToViewPost.bind(this);
+    this.goToModifyProfile = this.goToModifyProfile.bind(this);
   }
 
   getProfile() {
@@ -43,6 +44,7 @@ export default class Dashboard extends React.Component {
 
   componentDidMount() {
     this.getProfile();
+    this.getPosts();
   }
 
   goToCreatePost() {
@@ -57,8 +59,12 @@ export default class Dashboard extends React.Component {
     this.props.setView('switchProfile', {});
   }
 
-  goToViewPost(event) {
+  goToViewPost() {
     this.props.setView('viewPost', {});
+  }
+
+  goToModifyProfile() {
+    this.props.setView('modifyProfile', {});
   }
 
   pendingPost() {
@@ -85,7 +91,7 @@ export default class Dashboard extends React.Component {
           <div className="row">
             <div className="col-7">
               <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
-                <button className="col btn btn-custom text-custom-primary mb-4">Modify Profile</button>
+                <button onClick={this.goToModifyProfile} className="col btn btn-custom text-custom-primary mb-4">Modify Profile</button>
                 <button onClick={this.goToSwitchProfile} className="col btn btn-custom text-custom-primary mb-4">Switch Profile</button>
                 <button onClick={this.goToCreatePost} className="col btn btn-custom text-custom-primary mb-4">Create Post</button>
               </div>
@@ -122,7 +128,7 @@ export default class Dashboard extends React.Component {
           <div className="row">
             <div className="col-7">
               <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
-                <button className="col btn btn-custom text-custom-primary mb-4">
+                <button onClick={this.goToModifyProfile} className="col btn btn-custom text-custom-primary mb-4">
                   Modify Profile
                 </button>
                 <button className="col btn btn-custom text-custom-primary mb-4">

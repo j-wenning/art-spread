@@ -73,7 +73,7 @@ export default class Settings extends React.Component {
         <div className="row">
           <div className="col">
             <div className="prof-list overflow-auto">
-              {this.getProfiles && this.state.profiles.map(profile => {
+              {this.deleteProfile && this.getProfiles && this.state.profiles.map(profile => {
                 return (
                   <ProfileItem
                     key={profile.profileId}
