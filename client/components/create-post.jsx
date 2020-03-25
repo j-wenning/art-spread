@@ -7,7 +7,7 @@ class CreatePost extends React.Component {
       postBody: '',
       postTags: '',
       post: null,
-      image: ''
+      image: './assets/images/default-image.svg'
     };
     this.goToViewPost = this.goToViewPost.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -56,9 +56,8 @@ class CreatePost extends React.Component {
   }
 
   handleImage(event) {
-    const files = event.target.files;
     this.setState({
-      image: files[0]
+      image: URL.createObjectURL(event.target.files[0])
     });
   }
 
@@ -69,10 +68,11 @@ class CreatePost extends React.Component {
           className="d-flex justify-content-center w-100 align-items-center
         flex-column form" id={this.props.postId}
           onSubmit={this.handleSubmit}>
-          <label htmlFor="image-file" className="custom-file-upload btn btn-custom
+          <img className="preview-image-lg" src={this.state.image} alt="" />
+          <label htmlFor="image-file" className="mt-2 custom-file-upload btn btn-custom
           text-custom-primary">
             Upload image</label>
-          <input handleImage={this.handleImage}
+          <input onChange={this.handleImage}
             id="image-file" type="file" className="imageInput"/>
 
           <div className="w-100">
@@ -80,7 +80,7 @@ class CreatePost extends React.Component {
               Post body
             </div>
             <textarea
-              className="generalText form-control"
+              className="w-100 text-body"
               type="text"
               id="postBody"
               placeholder="post body"
@@ -92,7 +92,7 @@ class CreatePost extends React.Component {
               Post tags
             </div>
             <textarea
-              className="generalText form-control"
+              className="w-100 text-tags"
               type="text"
               id="postTags"
               placeholder="post tags"
