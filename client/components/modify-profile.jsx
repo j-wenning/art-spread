@@ -16,12 +16,11 @@ class ModifyProfile extends React.Component {
         name: 'account name',
         accountId: i
       })),
-      currentPicture: null,
       vanityHandle: '',
       bio: '',
-      image: ''
+      image: './assets/images/default-profile.svg'
     };
-    this.handleAvatar = this.handleAvatar.bind(this);
+    this.handleImage = this.handleImage.bind(this);
     this.getAccounts = this.getAccounts.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -61,10 +60,9 @@ class ModifyProfile extends React.Component {
     event.currentTarget.reset();
   }
 
-  handleAvatar(event) {
-    const files = event.target.files;
+  handleImage(event) {
     this.setState({
-      image: files[0]
+      image: URL.createObjectURL(event.target.files[0])
     });
   }
 
@@ -101,18 +99,17 @@ class ModifyProfile extends React.Component {
   }
 
   render() {
-    const pfp = this.state.currentPicture || './assets/images/default-profile.svg';
     return (
       <div>
         <form encType="multipart/form-data"
           className="form" id={this.props.profileId}
           onSubmit={this.handleSubmit}>
           <div className="row d-flex justify-content-center">
-            <img className="profile-picture mr-2" src={pfp} alt="" />
+            <img className="profile-picture mr-2" src={this.state.image} alt="" />
             <label htmlFor="image-file" className="custom-file-upload btn btn-custom
           text-custom-primary avatar-btn mt-4 ml-2 w-50">
             Upload avatar</label>
-            <input onClick={this.handleAvatar}
+            <input onChange={this.handleImage}
               id="image-file" type="file" className="imageInput" />
           </div>
           <div className="mt-3 w-100">

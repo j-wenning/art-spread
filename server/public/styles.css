@@ -221,3 +221,13 @@ h1 {
 .selected {
   background-color: rgb(238, 238, 238);
 }
+
+.text-body {
+  height: 200px;
+  border-radius: 10px;
+}
+
+.text-tags {
+  height: 150px;
+  border-radius: 10px;
+}
