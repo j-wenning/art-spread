@@ -101,6 +101,13 @@ export default class Settings extends React.Component {
       aria-haspopup="true" aria-expanded="false">
         social media
       </button>
+      <div onChange={this.handleChange} className="selected w-100 text-custom-primary dropdown-menu p-0"
+        aria-labelledby="dropdownMenu2">
+        <div className="w-100 d-flex flex-row justify-content-around">
+          <i className="fab fa-reddit fa-2x icon-color mt-1"></i>
+          <a className="text-custom-primary mt-2 mb-2 mr-2">Reddit</a>
+        </div>
+      </div>
       <button onClick={this.changeAccount} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
       </div>;
     }
