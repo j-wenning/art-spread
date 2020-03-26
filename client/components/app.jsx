@@ -80,7 +80,7 @@ export default class App extends React.Component {
   }
 
   addAccount(newAccount) {
-    fetch('/api/accounts', {
+    fetch('/api/account/request/:service', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newAccount)
@@ -99,12 +99,7 @@ export default class App extends React.Component {
       .then(data => {
         this.setState({ username: data });
       });
-    fetch('/api/password')
-      .then(response => response.json())
-      .then(data => {
-        this.setState({ password: data });
-      });
-    fetch('/api/accounts')
+    fetch('/api/account/request/:service')
       .then(response => response.json())
       .then(data => {
         this.setState({ account: data });
