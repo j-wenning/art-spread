@@ -371,6 +371,10 @@ function errorHandler(err, req, res, next) {
     });
   }
 }
+app.use(staticMiddleware);
+app.use(sessionMiddleware);
+
+app.use(express.json());
 
 app.delete('/api/post/:postId', (req, res) => {
   const { postId } = req.params;
@@ -388,9 +392,9 @@ app.delete('/api/post/:postId', (req, res) => {
     .catch(err => console.error(err));
 });
 
-app.delete('/api/profiles/:userId', (req, res) => {
-  const { userId } = req.params;
-  const value = [userId];
+app.delete('/api/profiles/:profileId', (req, res) => {
+  const { profileId } = req.params;
+  const value = [profileId];
 
   const sql = `
   DELETE FROM "profiles"
@@ -404,18 +408,49 @@ app.delete('/api/profiles/:userId', (req, res) => {
     .catch(err => console.error(err));
 });
 
-app.delete('/api/accounts/:');
-app.delete('/api/user/:');
+app.delete('/api/accounts/:accountId', (req, res) => {
+  const { accountId } = req.params;
+  const value = [accountId];
 
-app.put('/api/profiles/:profileId', (req, res) => {
+  const sql = `
+  DELETE FROM "accounts"
+  WHERE "accountId" = $1
+  returning *
+  `;
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => console.error(err));
+});
+
+app.delete('/api/user/:userId', (req, res) => {
+  const { userId } = req.params;
+  const value = [userId];
+
+  const sql = `
+  DELETE FROM "users"
+  WHERE "userId" = $1
+  returning *
+  `;
+
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => console.error(err));
+});
+
+// PUT NOT WORKING... need to investigate
+app.put('/api/profiles', (req, res, next) => {
   const { profileId } = req.params;
-  const { profileName, avatarPath } = req.body;
-  const values = [profileName, avatarPath, profileId];
+  const { name, imgPath } = req.body;
+  const values = [name, imgPath, profileId];
 
   const sql = `
   UPDATE "profiles"
-  SET "profileName" = $1,
-      "avatarPath" = $2
+  SET "name" = $1,
+      "imgPath" = $2
   WHERE "profileId" = $3
   `;
 
@@ -427,16 +462,11 @@ app.put('/api/profiles/:profileId', (req, res) => {
           error: 'selected profileId does not exist'
         });
       } else {
-        res.status(200).json({ profileName, avatarPath });
+        res.status(200).json({ name, imgPath });
       }
     })
     .catch(err => console.error(err));
 });
-
-app.use(staticMiddleware);
-app.use(sessionMiddleware);
-
-app.use(express.json());
 
 app.get('/api/account/reddit/authorize',
   (req, res) => res.redirect('/reddit-oauth.html?' + qs.encode(req.query))
