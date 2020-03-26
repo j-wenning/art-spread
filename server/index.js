@@ -372,6 +372,67 @@ function errorHandler(err, req, res, next) {
   }
 }
 
+app.delete('/api/post/:postId', (req, res) => {
+  const { postId } = req.params;
+  const value = [postId];
+
+  const sql = `
+  DELETE FROM "posts"
+  WHERE "postId" = $1
+  returning *
+  `;
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => console.error(err));
+});
+
+app.delete('/api/profiles/:userId', (req, res) => {
+  const { userId } = req.params;
+  const value = [userId];
+
+  const sql = `
+  DELETE FROM "profiles"
+  WHERE "profileId" = $1
+  returning *
+  `;
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => console.error(err));
+});
+
+app.delete('/api/accounts/:');
+app.delete('/api/user/:');
+
+app.put('/api/profiles/:profileId', (req, res) => {
+  const { profileId } = req.params;
+  const { profileName, avatarPath } = req.body;
+  const values = [profileName, avatarPath, profileId];
+
+  const sql = `
+  UPDATE "profiles"
+  SET "profileName" = $1,
+      "avatarPath" = $2
+  WHERE "profileId" = $3
+  `;
+
+  db.query(sql, values)
+    .then(result => {
+      const data = result.rows;
+      if (!data) {
+        res.status(400).json({
+          error: 'selected profileId does not exist'
+        });
+      } else {
+        res.status(200).json({ profileName, avatarPath });
+      }
+    })
+    .catch(err => console.error(err));
+});
+
 app.use(staticMiddleware);
 app.use(sessionMiddleware);
 
