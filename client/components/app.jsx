@@ -14,7 +14,7 @@ export default class App extends React.Component {
     super(props);
     this.state = {
       view: {
-        name: 'login',
+        name: 'settings',
         params: {}
       },
       username: null,
@@ -74,22 +74,16 @@ export default class App extends React.Component {
       .then(response => response.json())
       .then(data => {
         this.setState({
-          password: data
+          password: null
         });
       });
   }
 
   addAccount(newAccount) {
-    fetch('/api/account/request/:service', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newAccount)
-    })
+    fetch('/api/account/request/:service')
       .then(response => response.json())
       .then(data => {
-        this.setState({
-          account: data
-        });
+        this.setState({ account: data });
       });
   }
 
@@ -98,11 +92,6 @@ export default class App extends React.Component {
       .then(response => response.json())
       .then(data => {
         this.setState({ username: data });
-      });
-    fetch('/api/account/request/:service')
-      .then(response => response.json())
-      .then(data => {
-        this.setState({ account: data });
       });
   }
 

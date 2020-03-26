@@ -14,7 +14,8 @@ export default class Settings extends React.Component {
       account: null,
       toggleUsername: false,
       togglePassword: false,
-      toggleAccount: false
+      toggleAccount: false,
+      isSubmitted: false
     };
     this.getAccounts = this.getAccounts.bind(this);
     this.deleteAccount = this.deleteAccount.bind(this);
@@ -52,11 +53,14 @@ export default class Settings extends React.Component {
     const newSubmission = {
       username: this.state.username
     };
-    this.props.addUsername(newSubmission);
-    event.currentTarget.reset();
-    this.setState({
-      username: ''
-    });
+    if (event.target.value.length > 0) {
+      this.props.addUsername(newSubmission);
+      event.currentTarget.reset();
+      this.setState({
+        username: '',
+        isSubmitted: true
+      });
+    }
   }
 
   handleSubmitPassword(event) {
@@ -121,9 +125,11 @@ export default class Settings extends React.Component {
     let field2;
     let field3;
     if (!isUsernameButton) {
-      field = <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4">
+      field = <div> <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4">
        Change Username
-      </button>;
+      </button>
+      {this.state.isSubmitted ? <i className="fas fa-check"></i> : ''}
+      </div>;
     } else if (isUsernameButton) {
       field = <form onSubmit={this.handleSubmitUsername} className="d-flex"><input onChange={this.handleChange}
         className="settings-input mr-2" type="text" />
@@ -131,7 +137,8 @@ export default class Settings extends React.Component {
       </form>;
     }
     if (!isPasswordButton) {
-      field2 = <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4">
+      field2 = <button onClick={this.changePassword}
+        className="col btn btn-custom text-custom-primary mb-4">
         Change Password
       </button>;
     } else if (isPasswordButton) {
