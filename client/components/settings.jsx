@@ -74,25 +74,25 @@ export default class Settings extends React.Component {
     let field2;
     let field3;
     if (!isUsernameButton) {
-      field = <button className="col btn btn-custom text-custom-primary mb-4">
+      field = <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4">
        Change Username
       </button>;
     } else if (isUsernameButton) {
       field = <div className="d-flex"><input className="settings-input mr-2" type="text" />
-        <button className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+        <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
       </div>;
     }
     if (!isPasswordButton) {
-      field2 = <button className="col btn btn-custom text-custom-primary mb-4">
+      field2 = <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4">
         Change Password
       </button>;
     } else if (isPasswordButton) {
       field2 = <div className="d-flex"><input className="settings-input mr-2" type="password" />
-        <button className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+        <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
       </div>;
     }
     if (!isAccountButton) {
-      field3 = <button className="col btn btn-custom text-custom-primary mb-4">
+      field3 = <button onClick={this.changeAccount} className="col btn btn-custom text-custom-primary mb-4">
         Add Account
       </button>;
     } else if (isAccountButton) {
@@ -101,7 +101,7 @@ export default class Settings extends React.Component {
       aria-haspopup="true" aria-expanded="false">
         social media
       </button>
-      <button className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+      <button onClick={this.changeAccount} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
       </div>;
     }
     return (
@@ -109,13 +109,13 @@ export default class Settings extends React.Component {
         <div className="row d-flex justify-content-center">
           <div className="col-7">
             <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
-              <div className="w-100 d-flex justify-content-center" onClick={this.changeUsername}>
+              <div className="w-100 d-flex justify-content-center">
                 {field}
               </div>
-              <div className="w-100 d-flex justify-content-center" onClick={this.changePassword}>
+              <div className="w-100 d-flex justify-content-center">
                 {field2}
               </div>
-              <div className="w-100 d-flex justify-content-center" onClick={this.changeAccount}>
+              <div className="w-100 d-flex justify-content-center">
                 {field3}
               </div>
             </div>
