@@ -106,7 +106,7 @@ function refresh(req, res, next) {
      WHERE "profileId" = $1;
   `, [profileId])
     .then(result => {
-      if (result.rowCount === 0) return 0;
+      if (result.rowCount === 0) return next();
       result.rows = result.rows.map(item => {
         if (item.type === 'reddit') {
           if (item.expiration - Date.now() < 300000) {
@@ -190,10 +190,11 @@ function getPosts(req, res, next) {
     .catch(err => next(err));
 }
 
-function getPublications(req, res, next) {
+function getPost(req, res, next) {
   const userId = req.session.userId;
   const profileId = req.session.currentProfile;
   const postId = req.params.postId;
+  const pubData = [];
 
   if (!userId) throw new ClientError('Requires userId', 403);
   else if (!profileId) throw new ClientError('Requires profileId', 400);
@@ -208,9 +209,31 @@ function getPublications(req, res, next) {
      WHERE "postId" = $1;
   `, [postId])
     .then(result => {
-      if (result.rowCount === 0) throw new ClientError('Post either does not exist or has not been published yet.', 400);
-      res.json(result.rows);
+      if (result.rowCount === 0) throw new ClientError('Post either does not exist or has not been published yet', 400);
+      result.rows = result.rows.map(item => {
+        if (item.type === 'reddit') {
+          return fetch(item.url + '.json')
+            .then(res => res.json())
+            .then(data => {
+              const [post, comments] = data;
+              pubData.push({
+                id: item.publicationId,
+                type: item.type,
+                analytics: { likes: post.data.children[0].data.ups },
+                comments: comments.data.children.map(comment => ({
+                  url: `http://www.reddit.com${comment.data.permalink}`,
+                  liked: !!comment.data.likes,
+                  handle: comment.data.author,
+                  body: comment.data.body
+                }))
+              });
+            })
+            .catch(err => console.error(err));
+        }
+      });
+      return Promise.all(result.rows);
     })
+    .then(() => res.json(pubData))
     .catch(err => next(err));
 }
 
@@ -443,7 +466,7 @@ app.get('/api/accounts', getAccounts);
 
 app.get('/api/posts', getPosts);
 
-app.get('/api/publications/:postId', getPublications);
+app.get('/api/post/:postId', getPost);
 
 app.get('/api/account/refresh', refresh, (req, res) => res.sendStatus(200));
 
