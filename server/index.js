@@ -451,7 +451,8 @@ app.put('/api/profiles', (req, res, next) => {
   UPDATE "profiles"
   SET "name" = $1,
       "imgPath" = $2
-  WHERE "profileId" = $3
+  where "profileId" = $3
+  returning *
   `;
 
   db.query(sql, values)
