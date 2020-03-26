@@ -397,10 +397,15 @@ app.delete('/api/profiles/:profileId', (req, res) => {
   const value = [profileId];
 
   const sql = `
+  WITH "account.cte" AS (
   DELETE FROM "profiles"
+    WHERE "profileId" = $1
+  RETURNING "profileId"
+  )
+  DELETE FROM  "account-profile-links"
   WHERE "profileId" = $1
-  returning *
   `;
+
   db.query(sql, value)
     .then(result => {
       res.status(200).json(result.rows[0]);
@@ -413,9 +418,13 @@ app.delete('/api/accounts/:accountId', (req, res) => {
   const value = [accountId];
 
   const sql = `
+  WITH "account.cte" AS (
   DELETE FROM "accounts"
   WHERE "accountId" = $1
-  returning *
+  RETURNING "accountId"
+  )
+  DELETE FROM  "account-profile-links"
+  WHERE "accountId" = $1
   `;
   db.query(sql, value)
     .then(result => {
