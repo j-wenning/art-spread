@@ -15,10 +15,16 @@ export default class App extends React.Component {
       view: {
         name: 'settings',
         params: {}
-      }
+      },
+      username: null,
+      password: null,
+      account: null
     };
     this.setView = this.setView.bind(this);
     this.makePost = this.makePost.bind(this);
+    this.addUsername = this.addUsername.bind(this);
+    this.addPassword = this.addPassword.bind(this);
+    this.addAccount = this.addAccount.bind(this);
   }
 
   setView(name, params) {
@@ -41,6 +47,66 @@ export default class App extends React.Component {
         this.setState({
           name: 'viewPost'
         });
+      });
+  }
+
+  addUsername(newUsername) {
+    fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newUsername)
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.setState({
+          username: data
+        });
+      });
+  }
+
+  addPassword(newPassword) {
+    fetch('/api/password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newPassword)
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.setState({
+          password: data
+        });
+      });
+  }
+
+  addAccount(newAccount) {
+    fetch('/api/accounts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newAccount)
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.setState({
+          account: data
+        });
+      });
+  }
+
+  componentDidMount() {
+    fetch('/api/username')
+      .then(response => response.json())
+      .then(data => {
+        this.setState({ username: data });
+      });
+    fetch('/api/password')
+      .then(response => response.json())
+      .then(data => {
+        this.setState({ password: data });
+      });
+    fetch('/api/accounts')
+      .then(response => response.json())
+      .then(data => {
+        this.setState({ account: data });
       });
   }
 
@@ -69,7 +135,8 @@ export default class App extends React.Component {
         return (
           <div className="app">
             <Header setView={this.setView} title={this.state.view.name} />
-            <Settings setView={this.setView} />
+            <Settings addUsername={this.addUsername} addPassword={this.addPassword}
+              addAccount={this.addAccount} setView={this.setView} />
           </div>
         );
       case 'viewPost':

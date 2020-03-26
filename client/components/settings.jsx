@@ -9,15 +9,22 @@ export default class Settings extends React.Component {
         name: 'account name',
         accountId: i
       })),
-      username: false,
-      password: false,
-      account: false
+      username: '',
+      password: '',
+      account: null,
+      toggleUsername: false,
+      togglePassword: false,
+      toggleAccount: false
     };
     this.getAccounts = this.getAccounts.bind(this);
     this.deleteAccount = this.deleteAccount.bind(this);
     this.changeUsername = this.changeUsername.bind(this);
     this.changePassword = this.changePassword.bind(this);
     this.changeAccount = this.changeAccount.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmitUsername = this.handleSubmitUsername.bind(this);
+    this.handleSubmitPassword = this.handleSubmitPassword.bind(this);
+    this.handleSubmitAccount = this.handleSubmitAccount.bind(this);
   }
 
   deleteAccount() {
@@ -36,6 +43,46 @@ export default class Settings extends React.Component {
       });
   }
 
+  handleChange(event) {
+    this.setState({ [event.target.id]: event.target.value });
+  }
+
+  handleSubmitUsername(event) {
+    event.preventDefault();
+    const newSubmission = {
+      username: this.state.username
+    };
+    this.props.addUsername(newSubmission);
+    event.currentTarget.reset();
+    this.setState({
+      username: ''
+    });
+  }
+
+  handleSubmitPassword(event) {
+    event.preventDefault();
+    const newSubmission = {
+      password: this.state.password
+    };
+    this.props.addPassword(newSubmission);
+    event.currentTarget.reset();
+    this.setState({
+      password: ''
+    });
+  }
+
+  handleSubmitAccount(event) {
+    event.preventDefault();
+    const newSubmission = {
+      account: this.state.account
+    };
+    this.props.addAccount(newSubmission);
+    event.currentTarget.reset();
+    this.setState({
+      account: null
+    });
+  }
+
   getAccounts() {
     fetch('/api/accounts')
       .then(res => res.json())
@@ -46,19 +93,19 @@ export default class Settings extends React.Component {
 
   changeUsername() {
     this.setState({
-      username: !this.state.username
+      toggleUsername: !this.state.toggleUsername
     });
   }
 
   changePassword() {
     this.setState({
-      password: !this.state.password
+      togglePassword: !this.state.togglePassword
     });
   }
 
   changeAccount() {
     this.setState({
-      account: !this.state.account
+      toggleAccount: !this.state.toggleAccount
     });
   }
 
@@ -67,9 +114,9 @@ export default class Settings extends React.Component {
   }
 
   render() {
-    const isUsernameButton = this.state.username;
-    const isPasswordButton = this.state.password;
-    const isAccountButton = this.state.account;
+    const isUsernameButton = this.state.toggleUsername;
+    const isPasswordButton = this.state.togglePassword;
+    const isAccountButton = this.state.toggleAccount;
     let field;
     let field2;
     let field3;
@@ -78,25 +125,27 @@ export default class Settings extends React.Component {
        Change Username
       </button>;
     } else if (isUsernameButton) {
-      field = <div className="d-flex"><input className="settings-input mr-2" type="text" />
-        <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
-      </div>;
+      field = <form onSubmit={this.handleSubmitUsername} className="d-flex"><input onChange={this.handleChange}
+        className="settings-input mr-2" type="text" />
+      <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+      </form>;
     }
     if (!isPasswordButton) {
       field2 = <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4">
         Change Password
       </button>;
     } else if (isPasswordButton) {
-      field2 = <div className="d-flex"><input className="settings-input mr-2" type="password" />
-        <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
-      </div>;
+      field2 = <form onSubmit={this.handleSubmitPassword} className="d-flex"><input onChange={this.handleChange}
+        className="settings-input mr-2" type="password" />
+      <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+      </form>;
     }
     if (!isAccountButton) {
       field3 = <button onClick={this.changeAccount} className="col btn btn-custom text-custom-primary mb-4">
         Add Account
       </button>;
     } else if (isAccountButton) {
-      field3 = <div className="d-flex"><button className="settings-dropdown btn btn-custom text-custom-primary d-flex justify-content-around
+      field3 = <form onSubmit={this.handleSubmitAccount} className="d-flex"><button className="settings-dropdown btn btn-custom text-custom-primary d-flex justify-content-around
             dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown"
       aria-haspopup="true" aria-expanded="false">
         social media
@@ -109,7 +158,7 @@ export default class Settings extends React.Component {
         </div>
       </div>
       <button onClick={this.changeAccount} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
-      </div>;
+      </form>;
     }
     return (
       <div>
