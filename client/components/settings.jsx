@@ -68,16 +68,40 @@ export default class Settings extends React.Component {
 
   render() {
     const isUsernameButton = this.state.username;
-    // const isPasswordButton = this.state.password;
-    // const isAccountButton = this.state.account;
+    const isPasswordButton = this.state.password;
+    const isAccountButton = this.state.account;
     let field;
+    let field2;
+    let field3;
     if (!isUsernameButton) {
       field = <button className="col btn btn-custom text-custom-primary mb-4">
        Change Username
       </button>;
-    } else {
+    } else if (isUsernameButton) {
       field = <div className="d-flex"><input className="settings-input mr-2" type="text" />
         <button className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+      </div>;
+    }
+    if (!isPasswordButton) {
+      field2 = <button className="col btn btn-custom text-custom-primary mb-4">
+        Change Password
+      </button>;
+    } else if (isPasswordButton) {
+      field2 = <div className="d-flex"><input className="settings-input mr-2" type="password" />
+        <button className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+      </div>;
+    }
+    if (!isAccountButton) {
+      field3 = <button className="col btn btn-custom text-custom-primary mb-4">
+        Add Account
+      </button>;
+    } else if (isAccountButton) {
+      field3 = <div className="d-flex"><button className="settings-dropdown btn btn-custom text-custom-primary d-flex justify-content-around
+            dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown"
+      aria-haspopup="true" aria-expanded="false">
+        social media
+      </button>
+      <button className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
       </div>;
     }
     return (
@@ -88,12 +112,12 @@ export default class Settings extends React.Component {
               <div className="w-100 d-flex justify-content-center" onClick={this.changeUsername}>
                 {field}
               </div>
-              <button className="col btn btn-custom text-custom-primary mb-4">
-                Change Password
-              </button>
-              <button className="col btn btn-custom text-custom-primary mb-4">
-                Add Account
-              </button>
+              <div className="w-100 d-flex justify-content-center" onClick={this.changePassword}>
+                {field2}
+              </div>
+              <div className="w-100 d-flex justify-content-center" onClick={this.changeAccount}>
+                {field3}
+              </div>
             </div>
           </div>
         </div>

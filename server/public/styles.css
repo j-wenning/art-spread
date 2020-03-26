@@ -219,3 +219,7 @@ h1 {
   height: 60px;
   border-radius: 10px;
 }
+
+.settings-dropdown {
+  width: 183px;
+}
