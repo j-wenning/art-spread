@@ -13,7 +13,7 @@ export default class App extends React.Component {
     super(props);
     this.state = {
       view: {
-        name: 'settings',
+        name: 'login',
         params: {}
       },
       username: null,
