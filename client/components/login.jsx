@@ -2,7 +2,6 @@ import React from 'react';
 
 class Login extends React.Component {
   goToDashboard() {
-    this.props.setView('dashboard', {});
     fetch('/api/user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -10,7 +9,10 @@ class Login extends React.Component {
         username: 'admin',
         password: 'admin'
       })
-    }).catch(err => console.error(err));
+    })
+      .then(() => fetch('/api/profile/current'))
+      .then(() => this.props.setView('dashboard', {}))
+      .catch(err => console.error(err));
   }
 
   render() {
