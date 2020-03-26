@@ -28,24 +28,6 @@ const qs = require('querystring');
 
 const fs = require('fs');
 
-function postUser(req, res, next) {
-  const { username, password } = req.body;
-
-  if (!username) throw new ClientError('Requires username', 400);
-  else if (!password) throw new ClientError('Requires password', 400);
-  db.query(`
-    SELECT "userId"
-      FROM "users"
-     WHERE "username" = $1 AND "password" = $2;
-  `, [username, password])
-    .then(result => {
-      if (result.rowCount === 0) throw new ClientError('Not found: user', 404);
-      req.session.userId = result.rows[0].userId;
-      res.status(200).send('Logged in successfully.');
-    })
-    .catch(err => next(err));
-}
-
 function getCurrentProfile(req, res, next) {
   const userId = req.session.userId;
   const profileId = req.session.currentProfile;
@@ -175,7 +157,79 @@ function getRequestAccount(req, res, next) {
         'state=' + req.session.authState,
         'duration=permanent'
       ].join('&'));
-  } else res.status(404).send('Not found: service');
+  } else res.status(404).send('Service does not exist');
+}
+
+function getPosts(req, res, next) {
+  const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
+  const postId = Number(req.query.postId);
+  const postCount = Number(req.query.postCount);
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
+  else if (postId < 1) throw new ClientError('Invalid postId', 400);
+  else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
+  db.query(`
+      SELECT "postId",
+             "title",
+             "body",
+             "tags",
+             "imgPath"
+        FROM "posts"
+       WHERE "postId" >= $1 AND "profileId" = $2
+    ORDER BY "postId" DESC
+       LIMIT $3;
+  `, [postId, profileId, postCount])
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('Post(s) do not exist', 404);
+      res.json(result.rows);
+    })
+    .catch(err => next(err));
+}
+
+function getPublications(req, res, next) {
+  const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
+  const postId = req.params.postId;
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  else if (postId < 1) throw new ClientError('Invalid postCount', 400);
+  db.query(`
+    SELECT "publicationId",
+           "url",
+           "type"
+      FROM "publications"
+      JOIN "accounts" USING ("accountId")
+     WHERE "postId" = $1;
+  `, [postId])
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('Post either does not exist or has not been published yet.', 400);
+      res.json(result.rows);
+    })
+    .catch(err => next(err));
+}
+
+function postUser(req, res, next) {
+  const { username, password } = req.body;
+
+  if (!username) throw new ClientError('Requires username', 400);
+  else if (!password) throw new ClientError('Requires password', 400);
+  db.query(`
+    SELECT "userId"
+      FROM "users"
+     WHERE "username" = $1 AND "password" = $2;
+  `, [username, password])
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('User does not exist', 404);
+      req.session.userId = result.rows[0].userId;
+      res.status(200).send('Logged in successfully.');
+    })
+    .catch(err => next(err));
 }
 
 function postPublish(req, res, next) {
@@ -197,7 +251,7 @@ function postPublish(req, res, next) {
       FROM "posts"
      WHERE "postId" = $1
   `, [postId]).then(result => {
-    if (result.rowCount === 0) throw new ClientError('Not found: post', 404);
+    if (result.rowCount === 0) throw new ClientError('Post does not exist', 404);
     Object.assign(post, result.rows[0]);
     return db.query(`
       SELECT "type",
@@ -381,19 +435,21 @@ app.get('/api/account/reddit/authorize',
   (req, res) => res.redirect('/reddit-oauth.html?' + qs.encode(req.query))
 );
 
-app.post('/api/user', postUser);
-
 app.get('/api/profile/current', getCurrentProfile);
 
 app.get('/api/profiles', getProfiles);
 
 app.get('/api/accounts', getAccounts);
 
-// get posts
+app.get('/api/posts', getPosts);
+
+app.get('/api/publications/:postId', getPublications);
 
 app.get('/api/account/refresh', refresh, (req, res) => res.sendStatus(200));
 
 app.get('/api/account/request/:service', getRequestAccount);
+
+app.post('/api/user', postUser);
 
 app.post('/api/publish/:postId', refresh, postPublish);
 
