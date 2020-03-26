@@ -477,16 +477,40 @@ app.put('/api/profiles/:profileId', (req, res, next) => {
     .catch(err => console.error(err));
 });
 
-app.put('/api/user/:userId', (req, res) => {
+app.put('/api/user/username/:userId', (req, res) => {
   const { userId } = req.params;
   const { username, password } = req.body;
-  const values = [username, password, userId];
+  const values = [username, userId];
 
   const sql = `
   UPDATE "users"
   SET "username" = $1,
-      "password" = $2
-  WHERE "userId" = $3
+  WHERE "userId" = $2
+  returning *
+  `;
+  db.query(sql, values)
+    .then(result => {
+      const data = result.rows;
+      if (!data) {
+        res.status(400).json({
+          error: 'selected profileId does not exist'
+        });
+      } else {
+        res.status(200).json({ username, password });
+      }
+    })
+    .catch(err => console.error(err));
+});
+
+app.put('/api/user/password/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { username, password } = req.body;
+  const values = [password, userId];
+
+  const sql = `
+  UPDATE "users"
+  SET "password" = $1
+  WHERE "userId" = $2
   returning *
   `;
   db.query(sql, values)
