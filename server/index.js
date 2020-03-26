@@ -15,20 +15,20 @@ const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => cb(null, './database/images'),
     filename: (req, file, cb) => cb(null,
-      `${Date.now()}-${req.body.profileId}-${Math.floor(Math.random() * 999)}${path.extname(file.originalname)}`
+      `${Date.now()}-${req.session.currentProfile}-${Math.floor(Math.random() * 999)}${path.extname(file.originalname)}`
     )
   }),
   fileFilter: (req, file, cb) => {
-    cb(null, Number(req.body.profileId) && req.body.profileId > 0);
+    cb(null, !!req.body.title);
   }
 }).single('image');
 
-app.use(staticMiddleware);
-app.use(sessionMiddleware);
+const fetch = require('node-fetch');
+const qs = require('querystring');
 
-app.use(express.json());
+const fs = require('fs');
 
-app.post('/api/user', (req, res, next) => {
+function postUser(req, res, next) {
   const { username, password } = req.body;
 
   if (!username) throw new ClientError('Requires username', 400);
@@ -39,14 +39,34 @@ app.post('/api/user', (req, res, next) => {
      WHERE "username" = $1 AND "password" = $2;
   `, [username, password])
     .then(result => {
-      if (result.rowCount === 0) throw new ClientError('User does not exist.', 404);
+      if (result.rowCount === 0) throw new ClientError('Not found: user', 404);
       req.session.userId = result.rows[0].userId;
       res.status(200).send('Logged in successfully.');
     })
     .catch(err => next(err));
-});
+}
 
-app.get('/api/profiles/:userId', (req, res, next) => {
+function getCurrentProfile(req, res, next) {
+  const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
+
+  if (profileId) return res.json(profileId);
+  db.query(`
+      SELECT "profileId"
+        FROM "profiles"
+       WHERE "userId" = $1
+    ORDER BY "profileId" DESC
+       LIMIT 1;
+  `, [userId])
+    .then(result => {
+      const newProfileId = result.rows[0].profileId;
+      req.session.currentProfile = newProfileId;
+      res.json(newProfileId || null);
+    })
+    .catch(err => next(err));
+}
+
+function getProfiles(req, res, next) {
   const userId = req.session.userId;
 
   if (!userId) throw new ClientError('Requires userId', 403);
@@ -62,153 +82,286 @@ app.get('/api/profiles/:userId', (req, res, next) => {
       res.json(result.rows || []);
     })
     .catch(err => next(err));
-});
+}
 
-app.get('/api/accounts/:profileId', (req, res, next) => {
+function getAccounts(req, res, next) {
   const userId = req.session.userId;
-  const profileId = Number(req.params.profileId);
+  const profileId = req.session.currentProfile;
 
   if (!userId) throw new ClientError('Requires userId', 403);
-  else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
-  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
   db.query(`
-      SELECT "a"."accountId",
-             "a"."name",
-             "a"."token"
+      SELECT "accountId",
+             "name",
+             "type",
+              (CASE
+                WHEN "profileId" = $1
+                THEN TRUE
+                ELSE FALSE
+              END) AS "associated"
         FROM "account-profile-links"
-        JOIN "accounts" AS "a" USING ("accountId")
-       WHERE "profileId" = $1
+        JOIN "accounts" USING ("accountId")
     ORDER BY "linkId";
   `, [profileId])
     .then(result => {
       res.json(result.rows || []);
     })
     .catch(err => next(err));
-});
+}
 
-app.get('/api/posts/:profileId', (req, res, next) => {
+function refresh(req, res, next) {
   const userId = req.session.userId;
-  const postId = Number(req.body.postId);
-  const postCount = Number(req.body.postCount);
-  const profileId = Number(req.params.profileId);
+  const profileId = req.session.currentProfile;
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  db.query(`
+    SELECT "accountId",
+           "refresh",
+           "expiration",
+           "type"
+      FROM "accounts"
+      JOIN "account-profile-links" USING ("accountId")
+     WHERE "profileId" = $1;
+  `, [profileId])
+    .then(result => {
+      if (result.rowCount === 0) return 0;
+      result.rows = result.rows.map(item => {
+        if (item.type === 'reddit') {
+          if (item.expiration - Date.now() < 300000) {
+            return fetch('https://www.reddit.com/api/v1/access_token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Basic ' + Buffer.from('EmIwQa2jhiAeCw:1obrKsmmOTNUA7czIeS5SEBmY4A').toString('base64')
+              },
+              body: [
+                'grant_type=refresh_token',
+                'refresh_token=' + item.refresh
+              ].join('&')
+            })
+              .then(res => res.json())
+              .then(data => db.query(`
+              UPDATE "accounts"
+                 SET "access" = $1, "expiration" = $2
+               WHERE "accountId" = $3;
+            `, [
+                data.access_token,
+                (data.expires_in * 1000 + Date.now()).toString(),
+                item.accountId
+              ]))
+              .catch(err => next(err));
+          }
+        }
+      });
+      return Promise.all(result.rows);
+    }).then(() => next())
+    .catch(err => next(err));
+}
+
+function getRequestAccount(req, res, next) {
+  const userId = req.session.userId;
+  const service = req.params.service;
 
   if (!userId) throw new ClientError('Requires userId', 403);
-  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
-  else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
-  else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
-  else if (postId < 1) throw new ClientError('Invalid postId', 400);
-  else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
-  else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
-  db.query(`
-      SELECT "postId",
-             "body",
-             "tags",
-             "imgPath"
-        FROM "posts"
-       WHERE "postId" >= $1 AND "profileId" = $2
-    ORDER BY "postId" DESC
-       LIMIT $3;
-  `, [postId, profileId, postCount])
-    .then(result => {
-      if (result.rowCount === 0) throw new ClientError('Posts do not exist.', 404);
-      res.json(result.rows || []);
-    })
-    .catch(err => next(err));
-});
+  if (!service) throw new ClientError('Requires service', 400);
+  if (service === 'reddit') {
+    req.session.authState = userId + Buffer.from((Math.random() * 999999).toString()).toString('base64');
+    res.redirect('https://www.reddit.com/api/v1/authorize?' +
+      [
+        'response_type=code',
+        'client_id=EmIwQa2jhiAeCw',
+        'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
+        'scope=identity+mysubreddits+submit+read+edit',
+        'state=' + req.session.authState,
+        'duration=permanent'
+      ].join('&'));
+  } else res.status(404).send('Not found: service');
+}
 
-app.get('/api/publications/:profileId', (req, res, next) => {
+function postPublish(req, res, next) {
   const userId = req.session.userId;
-  const postId = Number(req.body.postId);
-  const postCount = Number(req.body.postCount);
+  const profileId = req.session.currentProfile;
+  const postId = req.params.postId;
+  const post = {};
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  else if (postId < 1) throw new ClientError('Invalid postId', 400);
+
+  db.query(`
+    SELECT "body",
+           "tags",
+           "imgPath",
+           "title"
+      FROM "posts"
+     WHERE "postId" = $1
+  `, [postId]).then(result => {
+    if (result.rowCount === 0) throw new ClientError('Not found: post', 404);
+    Object.assign(post, result.rows[0]);
+    return db.query(`
+      SELECT "type",
+             "accountId",
+             "access"
+        FROM "accounts"
+        JOIN "account-profile-links" USING ("accountId")
+       WHERE "profileId" = $1;
+  `, [profileId])
+      .then(result => {
+        if (result.rowCount === 0) throw new ClientError('Profile missing accounts', 400);
+        fetch('https://api.imgur.com/3/upload.json', {
+          method: 'POST',
+          headers: {
+            // clientId 1a8676f350f391f
+            // clientSecret 6745f482432cebeb72060bcf586e733dee28e329
+            Authorization: 'Client-ID 1a8676f350f391f',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            image: fs.readFileSync(post.imgPath).toString('base64'),
+            title: 'test title',
+            type: 'image/base64',
+            description: 'test body'
+          })
+        }).then(res => res.json())
+          .then(data => {
+            result.rows = result.rows.map(item => {
+              if (item.type === 'reddit') {
+                return fetch('https://oauth.reddit.com/api/submit', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    Authorization: 'Bearer ' + item.access
+                  },
+                  body: [
+                    'ad=false',
+                    'api_type=json',
+                    'sr=testingground4bots',
+                    'title=' + post.title,
+                    'kind=image',
+                    'nsfw=false',
+                    'resubmit=false',
+                    'sendreplies=true',
+                    'spoiler=false',
+                    'text=' + post.body,
+                    'url=' + data.data.link
+                  ].join('&')
+                }).then(res => res.json())
+                  .then(data => {
+                    db.query(`
+                    INSERT INTO "publications"("url", "accountId", "postId")
+                         VALUES ($1, $2, $3);
+                  `, [data.json.data.url, item.accountId, postId]);
+                  }).catch(err => console.error(err));
+              }
+            });
+            return Promise.all(result.rows);
+          }).then(() => res.sendStatus(201))
+          .catch(err => next(err));
+      }).catch(err => next(err));
+  }).catch(err => next(err));
+}
+
+function postCurrentProfile(req, res, next) {
+  const userId = req.session.userId;
   const profileId = req.params.profileId;
 
-  if (!userId) throw new ClientError('Requires userId', 403);
-  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
-  else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
-  else if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
-  else if (postId < 1) throw new ClientError('Invalid postId', 400);
-  else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
+  if (!profileId && profileId !== 0) throw new ClientError('Requires profileId', 400);
   else if (profileId < 1) throw new ClientError('Invalid profileId', 400);
   db.query(`
-    WITH "posts_cte" AS (
-        SELECT "postId"
-          FROM "posts"
-         WHERE "postId" >= $1 AND "profileId" = $2
-      ORDER BY "postId" DESC
-        LIMIT $3
-    )
-    SELECT "po"."postId",
-           "pu"."publicationId",
-           "pu"."url"
-    FROM "posts_cte" AS "po"
-    JOIN "publications" AS "pu" USING ("postId")
-    ORDER BY "po"."postId", "pu"."publicationId" DESC;
-  `, [postId, profileId, postCount])
-    .then(result => res.json(result.rows || []))
+    SELECT *
+      FROM "profiles"
+     WHERE "userId" = $1, "profileId" = $2;
+  `, [userId, req.params.profileId])
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('Id mismatch', 403);
+      req.session.currentProfile = profileId;
+      res.sendStatus(200);
+    })
     .catch(err => next(err));
-});
+}
 
-app.post('/api/post/', (req, res, next) => {
+function postPost(req, res, next) {
   const userId = req.session.userId;
-
-  const sql = `
-  INSERT INTO "posts" ("body", "tags", "imgPath", "profileId")
-  VALUES ($1, $2, $3, $4)
-  returning *
-  `;
+  const profileId = req.session.currentProfile;
 
   if (!userId) throw new ClientError('Requires userId', 403);
-
+  if (!profileId) throw new ClientError('Requires profileId', 400);
   upload(req, res, err => {
     if (err) {
-      if (err.code === 'LIMIT_UNEXPECTED_FILE') next(new ClientError('Unexpected file(s).', 400));
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') next(new ClientError('Unexpected file(s)', 400));
       else next(err);
     } else {
-      const { body, tags } = req.body;
-      const profileId = Number(req.body.profileId);
-      if (!profileId && profileId !== 0) next(new ClientError('Requires profileId.', 400));
-      else if (profileId < 1) next(new ClientError('Invalid profileId.', 400));
-      db.query(sql, [body, tags, req.file.filename, profileId])
-        .then(data => res.json(data))
-        .catch(err => next(err));
+      const { title, body, tags } = req.body;
+      if (!title.trim()) next(new ClientError('Requires title', 400));
+      else {
+        db.query(`
+          INSERT INTO "posts" ("title", "body", "tags", "imgPath", "profileId")
+               VALUES ($1, $2, $3, $4, $5)
+            RETURNING "postId", "title", "body", "tags", "imgPath";
+        `, [title, body, tags, './' + req.file.path, profileId])
+          .then(data => res.json(data.rows[0]))
+          .catch(err => next(err));
+      }
     }
   });
-});
+}
 
-// user can post profile data
-app.post('/api/profiles', (req, res, next) => {
-  const { profileId, name, imagePath, userId } = req.body;
-  const values = [profileId, name, imagePath, userId];
-
-  const sql = ' ';
-  db.query(sql, values)
-    .then(result => res.json(result.rows[0]))
+function postAuthorizeRedditAccount(req, res, next) {
+  const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
+  const account = {};
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  else if (req.session.authState !== req.body.state) throw new ClientError('State mismatch', 403);
+  fetch('https://www.reddit.com/api/v1/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: 'Basic ' + Buffer.from('EmIwQa2jhiAeCw:1obrKsmmOTNUA7czIeS5SEBmY4A').toString('base64')
+    },
+    body: [
+      'grant_type=authorization_code',
+      'code=' + req.body.code,
+      'redirect_uri=http://localhost:3000/api/account/reddit/authorize'
+    ].join('&')
+  })
+    .then(resp => resp.json())
+    .then(data => {
+      Object.assign(account, data);
+      return fetch('https://oauth.reddit.com/api/v1/me', {
+        headers: { Authorization: 'Bearer ' + account.access_token }
+      });
+    }).then(resp => resp.json())
+    .then(data => db.query(`
+      WITH "account_cte" AS (
+          INSERT INTO "accounts" ("type", "name", "access", "refresh", "expiration", "userId")
+               VALUES ('reddit', $1, $2, $3, $4, $5)
+          ON CONFLICT
+        ON CONSTRAINT "unique-accounts" DO UPDATE
+                  SET "access" = $2, "refresh" = $3, "expiration" = $4
+            RETURNING "accountId"
+      )
+      INSERT INTO "account-profile-links" ("accountId", "profileId")
+           SELECT "account_cte"."accountId", $6 AS "profileId"
+             FROM "account_cte"
+      ON CONFLICT DO NOTHING;
+      `, [
+      data.name,
+      account.access_token,
+      account.refresh_token,
+      (account.expires_in * 1000 + Date.now()).toString(),
+      userId,
+      profileId
+    ]))
+    .then(() => {
+      delete req.session.authState;
+      res.redirect('http://localhost:3000');
+    })
     .catch(err => next(err));
-});
+}
 
-// save post data. Front end can send post data to database.
-app.post('/api/posts', (req, res, next) => {
-  const { postId, postBody, postTags, profileId } = req.body;
-  const values = [postId, postBody, postTags, profileId];
-
-  const sql = ' ';
-  db.query(sql, values)
-    .then(result => res.json(result.rows[0]))
-    .catch(err => next(err));
-});
-
-// send associated accounts
-app.delete('/api/post', (req, res, next) => {
-  const { postId } = req.params;
-  const value = [postId];
-
-  const sql = ' ';
-  db.query(sql, value)
-    .then(result => res.json(result.rows[0]))
-    .catch(err => next(err));
-});
-
-app.use((err, req, res, next) => {
+function errorHandler(err, req, res, next) {
   if (err instanceof ClientError) {
     res.status(err.status).json({ error: err.message });
   } else {
@@ -217,7 +370,40 @@ app.use((err, req, res, next) => {
       error: 'an unexpected error occurred'
     });
   }
-});
+}
+
+app.use(staticMiddleware);
+app.use(sessionMiddleware);
+
+app.use(express.json());
+
+app.get('/api/account/reddit/authorize',
+  (req, res) => res.redirect('/reddit-oauth.html?' + qs.encode(req.query))
+);
+
+app.post('/api/user', postUser);
+
+app.get('/api/profile/current', getCurrentProfile);
+
+app.get('/api/profiles', getProfiles);
+
+app.get('/api/accounts', getAccounts);
+
+// get posts
+
+app.get('/api/account/refresh', refresh, (req, res) => res.sendStatus(200));
+
+app.get('/api/account/request/:service', getRequestAccount);
+
+app.post('/api/publish/:postId', refresh, postPublish);
+
+app.post('/api/profile/current/:profileId', postCurrentProfile);
+
+app.post('/api/post/', postPost);
+
+app.post('/api/account/reddit/authorize', postAuthorizeRedditAccount);
+
+app.use(errorHandler);
 
 app.listen(process.env.PORT, () => {
   // eslint-disable-next-line no-console
