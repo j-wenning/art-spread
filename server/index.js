@@ -224,7 +224,8 @@ function getPost(req, res, next) {
                   url: `http://www.reddit.com${comment.data.permalink}`,
                   liked: !!comment.data.likes,
                   handle: comment.data.author,
-                  body: comment.data.body
+                  body: comment.data.body,
+                  time: comment.data.created_utc
                 }))
               });
             })
