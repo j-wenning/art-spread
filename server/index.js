@@ -441,8 +441,7 @@ app.delete('/api/user/:userId', (req, res) => {
     .catch(err => console.error(err));
 });
 
-// PUT NOT WORKING... need to investigate
-app.put('/api/profiles', (req, res, next) => {
+app.put('/api/profiles/:profileId', (req, res, next) => {
   const { profileId } = req.params;
   const { name, imgPath } = req.body;
   const values = [name, imgPath, profileId];
@@ -464,6 +463,32 @@ app.put('/api/profiles', (req, res, next) => {
         });
       } else {
         res.status(200).json({ name, imgPath });
+      }
+    })
+    .catch(err => console.error(err));
+});
+
+app.put('/api/user/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { username, password } = req.body;
+  const values = [username, password, userId];
+
+  const sql = `
+  UPDATE "users"
+  SET "username" = $1,
+      "password" = $2
+  WHERE "userId" = $3
+  returning *
+  `;
+  db.query(sql, values)
+    .then(result => {
+      const data = result.rows;
+      if (!data) {
+        res.status(400).json({
+          error: 'selected profileId does not exist'
+        });
+      } else {
+        res.status(200).json({ username, password });
       }
     })
     .catch(err => console.error(err));
