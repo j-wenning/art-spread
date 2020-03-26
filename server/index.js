@@ -376,7 +376,7 @@ app.use(sessionMiddleware);
 
 app.use(express.json());
 
-app.delete('/api/post/:postId', (req, res) => {
+app.delete('/api/post/:postId', (req, res, next) => {
   const { postId } = req.params;
   const value = [postId];
 
@@ -389,10 +389,10 @@ app.delete('/api/post/:postId', (req, res) => {
     .then(result => {
       res.status(200).json(result.rows[0]);
     })
-    .catch(err => console.error(err));
+    .catch(err => next(err));
 });
 
-app.delete('/api/profiles/:profileId', (req, res) => {
+app.delete('/api/profiles/:profileId', (req, res, next) => {
   const { profileId } = req.params;
   const value = [profileId];
 
@@ -410,10 +410,10 @@ app.delete('/api/profiles/:profileId', (req, res) => {
     .then(result => {
       res.status(200).json(result.rows[0]);
     })
-    .catch(err => console.error(err));
+    .catch(err => next(err));
 });
 
-app.delete('/api/accounts/:accountId', (req, res) => {
+app.delete('/api/accounts/:accountId', (req, res, next) => {
   const { accountId } = req.params;
   const value = [accountId];
 
@@ -430,10 +430,10 @@ app.delete('/api/accounts/:accountId', (req, res) => {
     .then(result => {
       res.status(200).json(result.rows[0]);
     })
-    .catch(err => console.error(err));
+    .catch(err => next(err));
 });
 
-app.delete('/api/user/:userId', (req, res) => {
+app.delete('/api/user/:userId', (req, res, next) => {
   const { userId } = req.params;
   const value = [userId];
 
@@ -447,7 +447,7 @@ app.delete('/api/user/:userId', (req, res) => {
     .then(result => {
       res.status(200).json(result.rows[0]);
     })
-    .catch(err => console.error(err));
+    .catch(err => next(err));
 });
 
 app.put('/api/profiles/:profileId', (req, res, next) => {
@@ -474,57 +474,62 @@ app.put('/api/profiles/:profileId', (req, res, next) => {
         res.status(200).json({ name, imgPath });
       }
     })
-    .catch(err => console.error(err));
+    .catch(err => next(err));
 });
-
-app.put('/api/user/username/:userId', (req, res) => {
+app.put('/api/user/username/:userId', (req, res, next) => {
   const { userId } = req.params;
-  const { username, password } = req.body;
+  const { username } = req.body;
   const values = [username, userId];
 
   const sql = `
   UPDATE "users"
-  SET "username" = $1,
+  SET "username" = $1
   WHERE "userId" = $2
-  returning *
   `;
+
   db.query(sql, values)
     .then(result => {
       const data = result.rows;
       if (!data) {
         res.status(400).json({
-          error: 'selected profileId does not exist'
+          error: 'selected userId does not exist'
         });
       } else {
-        res.status(200).json({ username, password });
+        res.status(200).json(!!result.rowCount);
       }
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+      if (err.code) next(new ClientError('username taken', 400));
+      else next(err);
+    });
 });
 
-app.put('/api/user/password/:userId', (req, res) => {
+app.put('/api/user/password/:userId', (req, res, next) => {
   const { userId } = req.params;
-  const { username, password } = req.body;
+  const { password } = req.body;
   const values = [password, userId];
 
   const sql = `
   UPDATE "users"
   SET "password" = $1
   WHERE "userId" = $2
-  returning *
   `;
+
   db.query(sql, values)
     .then(result => {
       const data = result.rows;
       if (!data) {
         res.status(400).json({
-          error: 'selected profileId does not exist'
+          error: 'selected userId does not exist'
         });
       } else {
-        res.status(200).json({ username, password });
+        res.status(200).json(!!result.rowCount);
       }
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+      if (err.code) next(new ClientError('need new password', 400));
+      else next(err);
+    });
 });
 
 app.get('/api/account/reddit/authorize',
