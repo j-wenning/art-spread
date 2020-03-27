@@ -1,6 +1,5 @@
 import React from 'react';
 import PostPreview from './post-preview';
-import PendingPost from './pending-post';
 
 export default class Dashboard extends React.Component {
   constructor(props) {
@@ -11,11 +10,8 @@ export default class Dashboard extends React.Component {
         name: null
       },
       switch: true,
-      posts: Array(15).fill(0).map((item, i) => ({
-        body: 'test',
-        tags: 'tttttttttttttttttttttttttttttttttttttttttttttttagtest',
-        poolId: i
-      }))
+      publishedPosts: [],
+      unpublishedPosts: []
     };
     this.goToCreatePost = this.goToCreatePost.bind(this);
     this.goToSettings = this.goToSettings.bind(this);
@@ -35,11 +31,12 @@ export default class Dashboard extends React.Component {
   }
 
   getPosts() {
-    fetch('/api/posts')
+    fetch('/api/posts?postId=1&postCount=10')
       .then(res => res.json())
-      .then(data => {
-        this.setState({ posts: data });
-      });
+      .then(data => this.setState({
+        publishedPosts: data.filter(item => item.published),
+        unpublishedPosts: data.filter(item => !item.published)
+      }));
   }
 
   componentDidMount() {
@@ -59,8 +56,8 @@ export default class Dashboard extends React.Component {
     this.props.setView('switchProfile', {});
   }
 
-  goToViewPost() {
-    this.props.setView('viewPost', {});
+  goToViewPost(post) {
+    this.props.setView('viewPost', { post });
   }
 
   goToModifyProfile() {
@@ -82,8 +79,19 @@ export default class Dashboard extends React.Component {
   render() {
     const pfp = this.state.profile.picture || './assets/images/default-profile.svg';
     const pfn = this.state.profile.name || 'profile';
-    const posts = this.state.posts.map(post => <PostPreview key={post.poolId} post={post}/>);
-    const pendingPosts = this.state.posts.map(post => <PendingPost key={post.poolId} post={post}/>);
+    const posts = this.state.publishedPosts.map(post =>
+      <PostPreview
+        key={post.postId}
+        post={post}
+        pending={false}
+        viewPost={() => this.goToViewPost(post)}/>
+    );
+    const pendingPosts = this.state.unpublishedPosts.map(post =>
+      <PostPreview
+        key={post.postId}
+        post={post}
+        pending={true}
+        viewPost={() => this.goToViewPost(post)}/>);
 
     if (this.state.switch) {
       return (
@@ -119,7 +127,7 @@ export default class Dashboard extends React.Component {
               </li>
             </ul>
           </div>
-          <div onClick={this.goToViewPost} className="list overflow-auto">
+          <div className="list overflow-auto">
             {posts}
           </div>
         </div>
