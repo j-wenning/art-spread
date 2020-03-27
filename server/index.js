@@ -680,7 +680,8 @@ function deleteLink(req, res, next) {
   const value = [linkId];
 
   const sql = `
-  DELETE FROM "account-profile-links"
+  DELETE FROM
+  "account-profile-links"
   WHERE "linkId" = $1
   `;
 
