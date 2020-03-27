@@ -231,3 +231,20 @@ h1 {
   height: 150px;
   border-radius: 10px;
 }
+
+.settings-input {
+  height: 60px;
+  border-radius: 10px;
+}
+
+.settings-dropdown {
+  width: 183px;
+}
+
+.check {
+  color: green;
+}
+
+.add-acct-width {
+  width: 162px;
+}
