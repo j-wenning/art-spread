@@ -674,6 +674,7 @@ function postLink(req, res, next) {
     })
     .catch(err => next(err));
 }
+
 function deleteLink(req, res, next) {
   const { linkId } = req.params;
   const value = [linkId];
@@ -684,10 +685,7 @@ function deleteLink(req, res, next) {
   `;
 
   if (!Number(linkId)) {
-    throw new ClientError(
-      `${linkId} must exist and has to be a positive integer`,
-      400
-    );
+    throw new ClientError(`${linkId} must exist and has to be a positive integer`, 400);
   }
 
   db.query(sql, value)
