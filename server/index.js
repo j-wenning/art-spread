@@ -13,7 +13,7 @@ const path = require('path');
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, './database/images'),
+    destination: (req, file, cb) => cb(null, './server/public/images'),
     filename: (req, file, cb) => cb(null,
       `${Date.now()}-${req.session.currentProfile}-${Math.floor(Math.random() * 999)}${path.extname(file.originalname)}`
     )
@@ -27,24 +27,6 @@ const fetch = require('node-fetch');
 const qs = require('querystring');
 
 const fs = require('fs');
-
-function postUser(req, res, next) {
-  const { username, password } = req.body;
-
-  if (!username) throw new ClientError('Requires username', 400);
-  else if (!password) throw new ClientError('Requires password', 400);
-  db.query(`
-    SELECT "userId"
-      FROM "users"
-     WHERE "username" = $1 AND "password" = $2;
-  `, [username, password])
-    .then(result => {
-      if (result.rowCount === 0) throw new ClientError('Not found: user', 404);
-      req.session.userId = result.rows[0].userId;
-      res.status(200).send('Logged in successfully.');
-    })
-    .catch(err => next(err));
-}
 
 function getCurrentProfile(req, res, next) {
   const userId = req.session.userId;
@@ -124,7 +106,7 @@ function refresh(req, res, next) {
      WHERE "profileId" = $1;
   `, [profileId])
     .then(result => {
-      if (result.rowCount === 0) return 0;
+      if (result.rowCount === 0) return next();
       result.rows = result.rows.map(item => {
         if (item.type === 'reddit') {
           if (item.expiration - Date.now() < 300000) {
@@ -175,7 +157,116 @@ function getRequestAccount(req, res, next) {
         'state=' + req.session.authState,
         'duration=permanent'
       ].join('&'));
-  } else res.status(404).send('Not found: service');
+  } else res.status(404).send('Service does not exist');
+}
+
+function getPosts(req, res, next) {
+  const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
+  const postId = Number(req.query.postId);
+  const postCount = Number(req.query.postCount);
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  else if (!postCount && postCount !== 0) throw new ClientError('Requires postCount', 400);
+  else if (postId < 1) throw new ClientError('Invalid postId', 400);
+  else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
+  db.query(`
+      WITH "publications_cte" AS (
+          SELECT TRUE AS "pc",
+                 "postId"
+            FROM "publications"
+        GROUP BY "postId"
+          HAVING COUNT(*) > 1
+      )
+      SELECT "postId",
+             "title",
+             "body",
+             "tags",
+             "imgPath",
+             COALESCE ("publications_cte"."pc", FALSE) AS "published"
+        FROM "posts"
+        LEFT JOIN "publications_cte" USING ("postId")
+       WHERE "postId" >= $1 AND "profileId" = $2
+    ORDER BY "postId" DESC
+       LIMIT $3;
+  `, [postId, profileId, postCount])
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('Post(s) do not exist', 404);
+      res.json(result.rows);
+    })
+    .catch(err => next(err));
+}
+
+function getPost(req, res, next) {
+  const userId = req.session.userId;
+  const profileId = req.session.currentProfile;
+  const postId = req.params.postId;
+  const pubData = [];
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!profileId) throw new ClientError('Requires profileId', 400);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  else if (postId < 1) throw new ClientError('Invalid postCount', 400);
+  db.query(`
+    SELECT "publicationId",
+           "url",
+           "type"
+      FROM "publications"
+      JOIN "accounts" USING ("accountId")
+     WHERE "postId" = $1;
+  `, [postId])
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('Post either does not exist or has not been published yet', 400);
+      result.rows = result.rows.map(item => {
+        if (item.type === 'reddit') {
+          return fetch(item.url + '.json')
+            .then(res => res.json())
+            .then(data => {
+              const [post, comments] = data;
+              pubData.push({
+                analytics: {
+                  id: item.publicationId,
+                  likes: post.data.children[0].data.ups,
+                  type: item.type
+                },
+                comments: comments.data.children.map(comment => ({
+                  body: comment.data.body,
+                  handle: comment.data.author,
+                  id: item.publicationId,
+                  liked: !!comment.data.likes,
+                  time: comment.data.created_utc,
+                  type: item.type,
+                  url: `http://www.reddit.com${comment.data.permalink}`
+                }))
+              });
+            })
+            .catch(err => console.error(err));
+        }
+      });
+      return Promise.all(result.rows);
+    })
+    .then(() => res.json(pubData))
+    .catch(err => next(err));
+}
+
+function postUser(req, res, next) {
+  const { username, password } = req.body;
+
+  if (!username) throw new ClientError('Requires username', 400);
+  else if (!password) throw new ClientError('Requires password', 400);
+  db.query(`
+    SELECT "userId"
+      FROM "users"
+     WHERE "username" = $1 AND "password" = $2;
+  `, [username, password])
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('User does not exist', 404);
+      req.session.userId = result.rows[0].userId;
+      res.status(200).send('Logged in successfully.');
+    })
+    .catch(err => next(err));
 }
 
 function postPublish(req, res, next) {
@@ -197,7 +288,7 @@ function postPublish(req, res, next) {
       FROM "posts"
      WHERE "postId" = $1
   `, [postId]).then(result => {
-    if (result.rowCount === 0) throw new ClientError('Not found: post', 404);
+    if (result.rowCount === 0) throw new ClientError('Post does not exist', 404);
     Object.assign(post, result.rows[0]);
     return db.query(`
       SELECT "type",
@@ -299,7 +390,7 @@ function postPost(req, res, next) {
           INSERT INTO "posts" ("title", "body", "tags", "imgPath", "profileId")
                VALUES ($1, $2, $3, $4, $5)
             RETURNING "postId", "title", "body", "tags", "imgPath";
-        `, [title, body, tags, './' + req.file.path, profileId])
+        `, [title, body, tags, `/${req.file.destination.split('/').pop()}/${req.file.filename}`, profileId])
           .then(data => res.json(data.rows[0]))
           .catch(err => next(err));
       }
@@ -592,6 +683,10 @@ app.get('/api/profile/current', getCurrentProfile);
 app.get('/api/profiles', getProfiles);
 
 app.get('/api/accounts', getAccounts);
+
+app.get('/api/posts', getPosts);
+
+app.get('/api/post/:postId', getPost);
 
 app.get('/api/account/refresh', refresh, (req, res) => res.sendStatus(200));
 

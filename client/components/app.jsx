@@ -128,7 +128,7 @@ export default class App extends React.Component {
         return (
           <div className="app">
             <Header setView={this.setView} title={this.state.view.name} />
-            <ViewPost setView={this.setView} />
+            <ViewPost params={this.state.view.params} setView={this.setView} />
           </div>
         );
       case 'switchProfile':

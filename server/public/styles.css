@@ -101,16 +101,22 @@ h1 {
   border-bottom: 2px solid rgb(73, 73, 105);
 }
 
+.post-preview:last-child {
+  border: none;
+}
+
 .post-preview-fields {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  height: 30px
 }
 
 .preview-image {
   border: 2px solid rgb(73, 73, 105);
   background-color: rgb(238, 238, 238);
   height: 100px;
+  width: 100px
 }
 
 .preview-image-lg {
@@ -121,6 +127,7 @@ h1 {
 
 .text-plate {
   padding: 3px 10px;
+  min-height: 25px;
   margin: 5px 0;
   border-radius: 15px;
   background-color: rgb(238, 238, 238);
@@ -132,37 +139,6 @@ h1 {
 
 .custom-file-upload {
     cursor: pointer;
-}
-
-.post-body {
-  background-color: rgb(238, 238, 238);
-  height: 200px;
-  border-radius: 10px;
-}
-
-.post-tags {
-  background-color: rgb(238, 238, 238);
-  height: 60px;
-  border-radius: 10px;
-}
-
-.commenter {
-  background-color: rgb(238, 238, 238);
-  height: 40px;
-  border-radius: 10px;
-  display: inline-block;
-}
-
-.comment-body {
-  background-color: rgb(238, 238, 238);
-  height: 100px;
-  border-radius: 10px;
-}
-
-.reply {
-  height: 175px;
-  width: 100%;
-  border-radius: 10px;
 }
 
 .reply-button {
@@ -230,6 +206,10 @@ h1 {
 .text-tags {
   height: 150px;
   border-radius: 10px;
+}
+
+.analytic-font {
+  font-size: 23px;
 }
 
 .settings-input {

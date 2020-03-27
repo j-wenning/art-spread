@@ -4,15 +4,21 @@ export default class CommentItem extends React.Component {
 
   render() {
     return (
-      <div className="post-preview">
-        <div id={this.props.commentId} >
-          <div className="w-75 p-2 mb-3 row text-custom-primary commenter">
-            {this.props.commenter}
+      <div className="post-preview container">
+        <div className="col">
+          <div className="row">
+            <div className="text-plate text-custom-primary col-10 mb-3">
+              {this.props.comment.handle}
+            </div>
+            <div className="col-2 d-flex justify-content-center">
+              <i onClick={this.props.like}
+                className={`text-center ${this.props.comment.liked ? 'liked fas' : 'unliked far'} fa-heart fa-2x`}></i>
+            </div>
           </div>
-          <i onClick={this.props.like}
-            className={`ml-5 ${this.props.liked ? 'liked' : 'unliked'} far fa-heart fa-2x`}></i>
-          <div onClick={this.props.setView} className="p-2 mb-3 text-custom-primary comment-body row">
-            {this.props.commentBody}
+          <div className="row">
+            <div onClick={this.props.setView} className="col-12 text-plate text-custom-primary">
+              {this.props.comment.body}
+            </div>
           </div>
         </div>
       </div>
