@@ -14,7 +14,7 @@ export default class PostPreview extends React.Component {
 
   render() {
     return (
-      <div className="post-preview row col">
+      <div onClick={this.props.viewPost} className="post-preview row col">
         <div className="col-4 d-flex align-items-center ">
           <div className={this.props.pending ? 'pending-icon-relative' : ''}>
             <div className={`text-custom-primary ${this.props.pending ? 'mb-4 pending-icon align-items-center far fa-clock fa-border-icon' : ''}`}></div>

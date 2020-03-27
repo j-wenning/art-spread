@@ -226,15 +226,19 @@ function getPost(req, res, next) {
             .then(data => {
               const [post, comments] = data;
               pubData.push({
-                id: item.publicationId,
-                type: item.type,
-                analytics: { likes: post.data.children[0].data.ups },
+                analytics: {
+                  id: item.publicationId,
+                  likes: post.data.children[0].data.ups,
+                  type: item.type
+                },
                 comments: comments.data.children.map(comment => ({
-                  url: `http://www.reddit.com${comment.data.permalink}`,
-                  liked: !!comment.data.likes,
-                  handle: comment.data.author,
                   body: comment.data.body,
-                  time: comment.data.created_utc
+                  handle: comment.data.author,
+                  id: item.publicationId,
+                  liked: !!comment.data.likes,
+                  time: comment.data.created_utc,
+                  type: item.type,
+                  url: `http://www.reddit.com${comment.data.permalink}`
                 }))
               });
             })

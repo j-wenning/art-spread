@@ -56,8 +56,8 @@ export default class Dashboard extends React.Component {
     this.props.setView('switchProfile', {});
   }
 
-  goToViewPost() {
-    this.props.setView('viewPost', {});
+  goToViewPost(post) {
+    this.props.setView('viewPost', { post });
   }
 
   goToModifyProfile() {
@@ -79,8 +79,19 @@ export default class Dashboard extends React.Component {
   render() {
     const pfp = this.state.profile.picture || './assets/images/default-profile.svg';
     const pfn = this.state.profile.name || 'profile';
-    const posts = this.state.publishedPosts.map(post => <PostPreview key={post.postId} post={post} pending={false}/>);
-    const pendingPosts = this.state.unpublishedPosts.map(post => <PostPreview key={post.postId} post={post} pending={true}/>);
+    const posts = this.state.publishedPosts.map(post =>
+      <PostPreview
+        key={post.postId}
+        post={post}
+        pending={false}
+        viewPost={() => this.goToViewPost(post)}/>
+    );
+    const pendingPosts = this.state.unpublishedPosts.map(post =>
+      <PostPreview
+        key={post.postId}
+        post={post}
+        pending={true}
+        viewPost={() => this.goToViewPost(post)}/>);
 
     if (this.state.switch) {
       return (
@@ -116,7 +127,7 @@ export default class Dashboard extends React.Component {
               </li>
             </ul>
           </div>
-          <div onClick={this.goToViewPost} className="list overflow-auto">
+          <div className="list overflow-auto">
             {posts}
           </div>
         </div>
