@@ -5,11 +5,7 @@ export default class Settings extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      profiles: Array(15).fill(0).map((account, i) => ({
-        profilePic: 'img',
-        name: 'profile name',
-        profileId: i
-      }))
+      profiles: []
     };
     this.getProfiles = this.getProfiles.bind(this);
     this.deleteProfile = this.deleteProfile.bind(this);
