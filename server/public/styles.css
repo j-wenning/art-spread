@@ -105,6 +105,7 @@ h1 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  height: 30px
 }
 
 .preview-image {

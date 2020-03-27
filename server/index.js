@@ -13,7 +13,7 @@ const path = require('path');
 
 const upload = multer({
   storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, './database/images'),
+    destination: (req, file, cb) => cb(null, './server/public/images'),
     filename: (req, file, cb) => cb(null,
       `${Date.now()}-${req.session.currentProfile}-${Math.floor(Math.random() * 999)}${path.extname(file.originalname)}`
     )
@@ -173,12 +173,21 @@ function getPosts(req, res, next) {
   else if (postId < 1) throw new ClientError('Invalid postId', 400);
   else if (postCount < 1) throw new ClientError('Invalid postCount', 400);
   db.query(`
+      WITH "publications_cte" AS (
+          SELECT TRUE AS "pc",
+                 "postId"
+            FROM "publications"
+        GROUP BY "postId"
+          HAVING COUNT(*) > 1
+      )
       SELECT "postId",
              "title",
              "body",
              "tags",
-             "imgPath"
+             "imgPath",
+             COALESCE ("publications_cte"."pc", FALSE) AS "published"
         FROM "posts"
+        LEFT JOIN "publications_cte" USING ("postId")
        WHERE "postId" >= $1 AND "profileId" = $2
     ORDER BY "postId" DESC
        LIMIT $3;
@@ -377,7 +386,7 @@ function postPost(req, res, next) {
           INSERT INTO "posts" ("title", "body", "tags", "imgPath", "profileId")
                VALUES ($1, $2, $3, $4, $5)
             RETURNING "postId", "title", "body", "tags", "imgPath";
-        `, [title, body, tags, './' + req.file.path, profileId])
+        `, [title, body, tags, `/${req.file.destination.split('/').pop()}/${req.file.filename}`, profileId])
           .then(data => res.json(data.rows[0]))
           .catch(err => next(err));
       }
@@ -449,8 +458,6 @@ function errorHandler(err, req, res, next) {
     });
   }
 }
-
-app.use('/api/images', express.static(path.join(__dirname, '/database/images')));
 
 app.use(staticMiddleware);
 app.use(sessionMiddleware);

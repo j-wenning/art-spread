@@ -345,7 +345,10 @@ COPY public.accounts ("accountId", type, name, access, refresh, expiration, "use
 --
 
 COPY public.posts ("postId", title, "imgPath", body, tags, "profileId") FROM stdin;
-1	Sample Title	./database/images/1585179661586-1-4.png	S  a  m  p  l  e    b  o  d  y	#tag1#tag2#tag3	1
+1	Sample Title	/images/1585179661586-1-4.png	S  a  m  p  l  e    b  o  d  y	#tag1#tag2#tag3	1
+2	A Masterpiece	/images/1585271031909-1-436.png	Like forreal just check out how good I am at drawing.	#lit#sick#amazing	1
+3	And here's another example.	/images/1585271445187-1-566.png	This time I won't include tags.	\N	1
+4	Like yo I'm so cool.	/images/1585271841388-1-908.png	\N	#tagless#cool#nice	1
 \.
 
 
@@ -395,7 +398,7 @@ SELECT pg_catalog.setval('public."accounts_accountId_seq"', 2, true);
 -- Name: posts_postId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."posts_postId_seq"', 1, true);
+SELECT pg_catalog.setval('public."posts_postId_seq"', 4, true);
 
 
 --
