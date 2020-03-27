@@ -211,3 +211,20 @@ h1 {
 .analytic-font {
   font-size: 23px;
 }
+
+.settings-input {
+  height: 60px;
+  border-radius: 10px;
+}
+
+.settings-dropdown {
+  width: 183px;
+}
+
+.check {
+  color: green;
+}
+
+.add-acct-width {
+  width: 162px;
+}
