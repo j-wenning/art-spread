@@ -450,6 +450,8 @@ function errorHandler(err, req, res, next) {
   }
 }
 
+app.use('/api/images', express.static(path.join(__dirname, '/database/images')));
+
 app.use(staticMiddleware);
 app.use(sessionMiddleware);
 

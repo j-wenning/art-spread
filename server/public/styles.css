@@ -111,6 +111,7 @@ h1 {
   border: 2px solid rgb(73, 73, 105);
   background-color: rgb(238, 238, 238);
   height: 100px;
+  width: 100px
 }
 
 .preview-image-lg {

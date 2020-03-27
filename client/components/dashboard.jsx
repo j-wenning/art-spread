@@ -35,11 +35,9 @@ export default class Dashboard extends React.Component {
   }
 
   getPosts() {
-    fetch('/api/posts')
+    fetch('/api/posts?postId=1&postCount=10')
       .then(res => res.json())
-      .then(data => {
-        this.setState({ posts: data });
-      });
+      .then(data => this.setState({ posts: data }));
   }
 
   componentDidMount() {

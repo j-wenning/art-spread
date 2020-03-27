@@ -18,21 +18,20 @@ export default class PostPreview extends React.Component {
         <div className="col-4 d-flex align-items-center">
           <img
             className="preview-image"
-            src={this.props.post.img || './assets/images/default-image.svg'}
+            src={this.props.post.imgPath || './assets/images/default-image.svg'}
             alt=""
           />
         </div>
         <div className="col-7 ml-3">
+
           <p className="post-preview-fields text-custom-primary text-plate">
-            {this.props.post.body.substr(0, 30) +
-              (this.props.post.body.length > 30 ? '...' : '')}
+            {this.props.post.title}
+          </p>
+          <p className="post-preview-fields text-custom-primary text-plate">
+            {this.props.post.body}
           </p>
           <p className="post-preview-fields text-primary text-plate">
-            {this.props.post.tags.substr(0, 30) +
-              (this.props.post.tags.length > 30 ? '...' : '')}
-          </p>
-          <p className="post-preview-fields text-custom-primary text-plate">
-            {this.state.analytics || 'loading...'}
+            {this.props.post.tags}
           </p>
         </div>
       </div>

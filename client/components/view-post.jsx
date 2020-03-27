@@ -16,25 +16,11 @@ export default class ViewPost extends React.Component {
     };
   }
 
-  getAnalytics() {
-    fetch('/api/analytics')
-      .then(res => res.json())
-      .then(data => this.setState({ analytics: data }));
-  }
-
   getPost() {
-    fetch('/api/posts')
+    fetch(`/api/post/${1}`)
       .then(res => res.json())
       .then(data => {
         this.setState({ posts: data });
-      });
-  }
-
-  getComments() {
-    fetch('/api/comments')
-      .then(res => res.json())
-      .then(data => {
-        this.setState({ comments: data });
       });
   }
 
@@ -51,9 +37,7 @@ export default class ViewPost extends React.Component {
   }
 
   componentDidMount() {
-    this.getAnalytics();
     this.getPost();
-    this.getComments();
   }
 
   handleClick(commentId) {
