@@ -1,5 +1,6 @@
 import React from 'react';
 import CommentItem from './comment-item';
+import AnalyticItem from './analytic-item';
 
 export default class ViewPost extends React.Component {
   constructor(props) {
@@ -57,7 +58,13 @@ export default class ViewPost extends React.Component {
       like={() => this.handleClick(comment.commentId)}
       setView={() => this.props.setView('viewComments', {})}/>);
     // const analytics = this.state.analytics.map(a => a);
-    const analytics = <div></div>;
+    const analytics = this.state.analytics.map(analytic =>
+      <AnalyticItem
+        key={analytic.id}
+        analytic={analytic}
+      />);
+    // const analytics = <div>{this.state.analytics.likes}</div>;
+
     return (
       <div>
         <div className="d-flex justify-content-center">
@@ -68,7 +75,7 @@ export default class ViewPost extends React.Component {
         </div>
         <div className="container-fluid mt-3 mb-3 ml-1 mr-1">
           <div className="horizontal-list overflow-auto row row-horizon flex-row
-          flex-nowrap align-items-center">
+          flex-nowrap align-items-center justify-content-around">
             {analytics}
           </div>
         </div>
