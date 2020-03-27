@@ -93,15 +93,45 @@ export default class Settings extends React.Component {
   }
 
   changeUsername() {
-    this.setState({
-      toggleUsername: !this.state.toggleUsername
-    });
+    if (this.state.toggleUsername) {
+      const fetchParams = {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: this.state.username })
+      };
+      fetch('/api/user/username/:userId', fetchParams)
+        .then(res => {
+          console.warn(res);
+        });
+      this.setState({
+        toggleUsername: !this.state.toggleUsername
+      });
+    } else {
+      this.setState({
+        toggleUsername: !this.state.toggleUsername
+      });
+    }
   }
 
   changePassword() {
-    this.setState({
-      togglePassword: !this.state.togglePassword
-    });
+    if (this.state.togglePassword) {
+      const fetchParams = {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: this.state.password })
+      };
+      fetch('/api/user/password/:userId', fetchParams)
+        .then(res => {
+          console.warn(res);
+        });
+      this.setState({
+        togglePassword: !this.state.togglePassword
+      });
+    } else {
+      this.setState({
+        togglePassword: !this.state.togglePassword
+      });
+    }
   }
 
   changeAccount() {
