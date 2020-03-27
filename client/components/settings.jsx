@@ -53,7 +53,7 @@ export default class Settings extends React.Component {
     const newSubmission = {
       username: this.state.username
     };
-    if (event.target.value.length > 0) {
+    if (this.state.username.length > 0) {
       this.props.addUsername(newSubmission);
       event.currentTarget.reset();
       this.setState({
@@ -121,52 +121,64 @@ export default class Settings extends React.Component {
     const isUsernameButton = this.state.toggleUsername;
     const isPasswordButton = this.state.togglePassword;
     const isAccountButton = this.state.toggleAccount;
-    let field;
-    let field2;
-    let field3;
-    if (!isUsernameButton) {
-      field = <div> <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4">
+
+    const field = <form onSubmit={this.handleSubmitUsername} className="d-flex">
+      {!isUsernameButton
+        ? (<div className="d-flex flex-row justify-content-around align-items-center">
+          <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4">
        Change Username
-      </button>
-      {this.state.isSubmitted ? <i className="fas fa-check"></i> : ''}
-      </div>;
-    } else if (isUsernameButton) {
-      field = <form onSubmit={this.handleSubmitUsername} className="d-flex"><input onChange={this.handleChange}
-        className="settings-input mr-2" type="text" />
-      <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
-      </form>;
-    }
-    if (!isPasswordButton) {
-      field2 = <button onClick={this.changePassword}
-        className="col btn btn-custom text-custom-primary mb-4">
-        Change Password
-      </button>;
-    } else if (isPasswordButton) {
-      field2 = <form onSubmit={this.handleSubmitPassword} className="d-flex"><input onChange={this.handleChange}
-        className="settings-input mr-2" type="password" />
-      <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
-      </form>;
-    }
-    if (!isAccountButton) {
-      field3 = <button onClick={this.changeAccount} className="col btn btn-custom text-custom-primary mb-4">
-        Add Account
-      </button>;
-    } else if (isAccountButton) {
-      field3 = <form onSubmit={this.handleSubmitAccount} className="d-flex"><button className="settings-dropdown btn btn-custom text-custom-primary d-flex justify-content-around
+          </button>
+          {this.state.username.length > 0 && <i className="mb-4 ml-2 fas fa-check check"></i>}
+        </div>)
+        : (<div className="d-flex">
+          <input id="username" onChange={this.handleChange}
+            className="settings-input mr-2" type="text" />
+          <button onClick={this.changeUsername} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+        </div>)
+      }
+    </form>;
+
+    const field2 = <form onSubmit={this.handleSubmitPassword} className="d-flex">
+      {!isPasswordButton
+        ? (<div className="d-flex flex-row justify-content-around align-items-center">
+          <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4">
+            Change password
+          </button>
+          {this.state.password.length > 0 && <i className="mb-4 ml-2 fas fa-check check"></i>}
+        </div>)
+        : (<div className="d-flex">
+          <input id="password" onChange={this.handleChange}
+            className="settings-input mr-2" type="password" />
+          <button onClick={this.changePassword} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+        </div>)
+      }
+    </form>;
+
+    const field3 = <form onSubmit={this.handleSubmitAccount} className="add-acct-width d-flex justify-content-center">
+      {!isAccountButton
+        ? (<div className="w-100 d-flex flex-row justify-content-around align-items-center">
+          <button onClick={this.changeAccount} className="w-100 col btn btn-custom text-custom-primary mb-4">
+            Add account
+          </button>
+        </div>)
+        : (<div className="d-flex">
+          <button className="settings-dropdown btn btn-custom text-custom-primary d-flex justify-content-around
             dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown"
-      aria-haspopup="true" aria-expanded="false">
-        social media
-      </button>
-      <div onChange={this.handleChange} className="selected w-100 text-custom-primary dropdown-menu p-0"
-        aria-labelledby="dropdownMenu2">
-        <div className="w-100 d-flex flex-row justify-content-around">
-          <i className="fab fa-reddit fa-2x icon-color mt-1"></i>
-          <a className="text-custom-primary mt-2 mb-2 mr-2">Reddit</a>
-        </div>
-      </div>
-      <button onClick={this.changeAccount} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
-      </form>;
-    }
+          aria-haspopup="true" aria-expanded="false">
+            social media
+          </button>
+          <div onChange={this.handleChange} className="selected w-100 text-custom-primary dropdown-menu p-0"
+            aria-labelledby="dropdownMenu2">
+            <div className="w-100 d-flex flex-row justify-content-around">
+              <i className="fab fa-reddit fa-2x icon-color mt-1"></i>
+              <a className="text-custom-primary mt-2 mb-2 mr-2">Reddit</a>
+            </div>
+          </div>
+          <button onClick={this.changeAccount} className="col btn btn-custom text-custom-primary mb-4 ml-2">Submit</button>
+        </div>)
+      }
+    </form>;
+
     return (
       <div>
         <div className="row d-flex justify-content-center">

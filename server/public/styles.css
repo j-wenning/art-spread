@@ -240,3 +240,11 @@ h1 {
 .settings-dropdown {
   width: 183px;
 }
+
+.check {
+  color: green;
+}
+
+.add-acct-width {
+  width: 162px;
+}
