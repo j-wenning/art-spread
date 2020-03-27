@@ -655,10 +655,56 @@ function updateUserUsername(req, res, next) {
     });
 }
 
+function postLink(req, res, next) {
+  const { accountId, profileId } = req.body;
+  const values = [accountId, profileId];
+
+  const sql = `
+    INSERT INTO "account-profile-links" ("accountId", "profileId")
+    VALUES ($1, $2)
+    `;
+
+  if (!Number(accountId)) throw new ClientError('accountId has to be a positive integter', 400);
+  else if (!Number(profileId)) throw new ClientError('profileId has to be a positive integter', 400);
+
+  db.query(sql, values)
+    .then(result => {
+      const data = result.rows[0];
+      res.status(200).json(data);
+    })
+    .catch(err => next(err));
+}
+function deleteLink(req, res, next) {
+  const { linkId } = req.params;
+  const value = [linkId];
+
+  const sql = `
+  DELETE FROM "account-profile-links"
+  WHERE "linkId" = $1
+  `;
+
+  if (!Number(linkId)) {
+    throw new ClientError(
+      `${linkId} must exist and has to be a positive integer`,
+      400
+    );
+  }
+
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => next(err));
+}
+
 app.use(staticMiddleware);
 app.use(sessionMiddleware);
 
 app.use(express.json());
+
+app.post('/api/link', postLink);
+
+app.delete('/api/link/:linkId', deleteLink);
 
 app.delete('/api/post/:postId', deletePost);
 
