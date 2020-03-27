@@ -371,11 +371,202 @@ function errorHandler(err, req, res, next) {
     });
   }
 }
-
 app.use(staticMiddleware);
 app.use(sessionMiddleware);
 
 app.use(express.json());
+
+app.delete('/api/post/:postId', (req, res, next) => {
+  const { postId } = req.params;
+  const value = [postId];
+
+  if (!Number(postId)) throw new ClientError(`${postId} must exist and has to be a positive integer`, 400);
+
+  const sql = `
+  DELETE FROM "posts"
+  WHERE "postId" = $1
+  returning *
+  `;
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => next(err));
+});
+
+app.delete('/api/profiles/:profileId', (req, res, next) => {
+  const { profileId } = req.params;
+  const value = [profileId];
+
+  if (!Number(profileId)) throw new ClientError(`${profileId} must exist and has to be a positive integer`, 400);
+
+  const sql = `
+  WITH "account.cte" AS (
+  DELETE FROM "profiles"
+    WHERE "profileId" = $1
+  RETURNING "profileId"
+  )
+  DELETE FROM  "account-profile-links"
+  WHERE "profileId" = $1
+  `;
+
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => next(err));
+});
+
+app.delete('/api/accounts/:accountId', (req, res, next) => {
+  const { accountId } = req.params;
+  const value = [accountId];
+
+  if (!Number(accountId)) throw new ClientError(`${accountId} must exist and has to be a positive integer`, 400);
+
+  const sql = `
+  WITH "account.cte" AS (
+  DELETE FROM "accounts"
+  WHERE "accountId" = $1
+  RETURNING "accountId"
+  )
+  DELETE FROM  "account-profile-links"
+  WHERE "accountId" = $1
+  `;
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => next(err));
+});
+
+app.delete('/api/user/:userId', (req, res, next) => {
+  const { userId } = req.params;
+  const value = [userId];
+
+  if (!Number(userId)) throw new ClientError(`${userId} must exist and has to be a positive integer`, 400);
+
+  const sql = `
+  DELETE FROM "users"
+  WHERE "userId" = $1
+  returning *
+  `;
+
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => next(err));
+});
+
+app.put('/api/profiles/:profileId', (req, res, next) => {
+  const { profileId } = req.params;
+  const { name, imgPath } = req.body;
+  const values = [name, imgPath, profileId];
+
+  const sql = `
+  UPDATE "profiles"
+  SET "name" = $1,
+      "imgPath" = $2
+  where "profileId" = $3
+  returning *
+  `;
+
+  if (!Number(profileId)) {
+    throw new ClientError(
+        `${profileId} must exist and has to be a positive integer`,
+        400
+    );
+  } else if (!name || !imgPath) {
+    throw new ClientError('Name and/or imgPath has to be defined', 400);
+  }
+
+  db.query(sql, values)
+    .then(result => {
+      const data = result.rows;
+      if (!data) {
+        res.status(400).json({
+          error: 'selected profileId does not exist'
+        });
+      } else {
+        res.status(200).json({ name, imgPath });
+      }
+    })
+    .catch(err => next(err));
+});
+
+app.put('/api/user/username/:userId', (req, res, next) => {
+  const { userId } = req.params;
+  const { username } = req.body;
+  const values = [username, userId];
+
+  const sql = `
+  UPDATE "users"
+  SET "username" = $1
+  WHERE "userId" = $2
+  `;
+
+  if (!Number(userId)) {
+    throw new ClientError(
+      `${userId} must exist and has to be a positive integer`,
+      400
+    );
+  } else if (!username) {
+    throw new ClientError('Username has to be defined', 400);
+  }
+
+  db.query(sql, values)
+    .then(result => {
+      const data = result.rows;
+      if (!data) {
+        res.status(400).json({
+          error: 'selected userId does not exist'
+        });
+      } else {
+        res.status(200).json(!!result.rowCount);
+      }
+    })
+    .catch(err => {
+      if (err.code) next(new ClientError('username taken', 400));
+      else next(err);
+    });
+});
+
+app.put('/api/user/password/:userId', (req, res, next) => {
+  const { userId } = req.params;
+  const { password } = req.body;
+  const values = [password, userId];
+
+  const sql = `
+  UPDATE "users"
+  SET "password" = $1
+  WHERE "userId" = $2
+  `;
+
+  if (!Number(userId)) {
+    throw new ClientError(
+        `${userId} must exist and has to be a positive integer`,
+        400
+    );
+  } else if (!password) {
+    throw new ClientError('password has to have a value', 400);
+  }
+
+  db.query(sql, values)
+    .then(result => {
+      const data = result.rows;
+      if (!data) {
+        res.status(400).json({
+          error: 'selected userId does not exist'
+        });
+      } else {
+        res.status(200).json(!!result.rowCount);
+      }
+    })
+    .catch(err => {
+      if (err.code) next(new ClientError('need new password', 400));
+      else next(err);
+    });
+});
 
 app.get('/api/account/reddit/authorize',
   (req, res) => res.redirect('/reddit-oauth.html?' + qs.encode(req.query))

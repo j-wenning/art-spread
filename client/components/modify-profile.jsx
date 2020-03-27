@@ -6,16 +6,8 @@ class ModifyProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      accounts: Array(10).fill(0).map((account, i) => ({
-        type: '',
-        name: 'account name',
-        accountId: i
-      })),
-      lists: Array(5).fill(0).map((account, i) => ({
-        type: '',
-        name: 'account name',
-        accountId: i
-      })),
+      accounts: [],
+      lists: [],
       vanityHandle: '',
       bio: '',
       image: './assets/images/default-profile.svg'
@@ -70,6 +62,7 @@ class ModifyProfile extends React.Component {
     fetch('/api/accounts')
       .then(res => res.json())
       .then(data => {
+
         if (data.associated) {
           this.setState({ accounts: data });
         } else if (!data.associated) {

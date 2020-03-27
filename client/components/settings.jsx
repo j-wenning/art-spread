@@ -5,10 +5,7 @@ export default class Settings extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      accounts: Array(15).fill(0).map((account, i) => ({
-        name: 'account name',
-        accountId: i
-      })),
+      accounts: []
       username: '',
       password: '',
       account: null,
