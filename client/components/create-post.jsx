@@ -4,6 +4,7 @@ class CreatePost extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      postTitle: '',
       postBody: '',
       postTags: '',
       post: null,
@@ -25,34 +26,8 @@ class CreatePost extends React.Component {
 
   handleSubmit(event) {
     event.preventDefault();
-    const newSubmission = {
-      postBody: this.state.postBody,
-      postTags: this.state.postTags
-    };
-    const formData = new FormData();
-    formData.append('image', this.state.image);
-    fetch(`/api/r/art/${formData}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    }).then(res => {
-      console.warn(res);
-    });
-    this.goToViewPost();
-    this.props.sendPost(newSubmission);
-    this.setState({
-      postBody: '',
-      postTags: ''
-    });
-    event.currentTarget.reset();
-  }
-
-  componentDidMount() {
-    fetch(`/api/r/art/${this.props.viewParams.postId}`)
-      .then(response => response.json())
-      .then(data => {
-        return this.setState({ post: data });
-      });
+    const formData = new FormData(event.target);
+    this.props.makePost(formData);
   }
 
   handleImage(event) {
@@ -73,7 +48,21 @@ class CreatePost extends React.Component {
           text-custom-primary">
             Upload image</label>
           <input onChange={this.handleImage}
-            id="image-file" type="file" className="imageInput"/>
+            id="image-file" type="file" className="imageInput" name="image"/>
+          <div className="w-100">
+            <div className="text-custom-primary ml-1 mb-1 mt-1">
+          Post title
+            </div>
+            <textarea
+              className="w-100 text-tags"
+              type="text"
+              id="postTitle"
+              placeholder="post title"
+              onChange={this.handleChange}
+              name="title"
+              required
+            />
+          </div>
 
           <div className="w-100">
             <div className="text-custom-primary ml-1 mb-1 mt-1">
@@ -85,6 +74,7 @@ class CreatePost extends React.Component {
               id="postBody"
               placeholder="post body"
               onChange={this.handleChange}
+              name="body"
             />
           </div>
           <div className="w-100">
@@ -97,13 +87,12 @@ class CreatePost extends React.Component {
               id="postTags"
               placeholder="post tags"
               onChange={this.handleChange}
+              name="tags"
             />
           </div>
           <div className="mt-2 d-flex flex-row w-100 justify-content-center createPostButton">
             <button
               className="btn btn-custom text-custom-primary"
-              onSubmit={this.handleSubmit}
-              onClick={() => this.props.makePost(this.state.post)}
               type="submit"
               value="Submit">
               Create post

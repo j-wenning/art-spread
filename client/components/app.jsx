@@ -38,16 +38,15 @@ export default class App extends React.Component {
   }
 
   makePost(post) {
-    fetch('/api/r/art', {
+    fetch('/api/post/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(post)
+      body: post
     })
-      .then(response => response.json())
-      .then(data => {
-        this.setState({
-          name: 'viewPost'
-        });
+      .then(res => {
+        return res.json();
+      })
+      .then(post => {
+        this.setView('viewPost', { post });
       });
   }
 
@@ -84,14 +83,6 @@ export default class App extends React.Component {
       .then(response => response.json())
       .then(data => {
         this.setState({ account: data });
-      });
-  }
-
-  componentDidMount() {
-    fetch('/api/username')
-      .then(response => response.json())
-      .then(data => {
-        this.setState({ username: data });
       });
   }
 

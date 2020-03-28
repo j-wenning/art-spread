@@ -17,10 +17,7 @@ const upload = multer({
     filename: (req, file, cb) => cb(null,
       `${Date.now()}-${req.session.currentProfile}-${Math.floor(Math.random() * 999)}${path.extname(file.originalname)}`
     )
-  }),
-  fileFilter: (req, file, cb) => {
-    cb(null, !!req.body.title);
-  }
+  })
 }).single('image');
 
 const fetch = require('node-fetch');
@@ -379,23 +376,28 @@ function postPost(req, res, next) {
   if (!userId) throw new ClientError('Requires userId', 403);
   if (!profileId) throw new ClientError('Requires profileId', 400);
   upload(req, res, err => {
-    if (err) {
-      if (err.code === 'LIMIT_UNEXPECTED_FILE') next(new ClientError('Unexpected file(s)', 400));
-      else next(err);
+    if (!req.body.title) {
+      next(new ClientError('requires title', 400));
     } else {
-      const { title, body, tags } = req.body;
-      if (!title.trim()) next(new ClientError('Requires title', 400));
-      else {
-        db.query(`
+      if (err) {
+        if (err.code === 'LIMIT_UNEXPECTED_FILE') next(new ClientError('Unexpected file(s)', 400));
+        else next(err);
+      } else {
+        const { title, body, tags } = req.body;
+        if (!title.trim()) next(new ClientError('Requires title', 400));
+        else {
+          db.query(`
           INSERT INTO "posts" ("title", "body", "tags", "imgPath", "profileId")
                VALUES ($1, $2, $3, $4, $5)
             RETURNING "postId", "title", "body", "tags", "imgPath";
         `, [title, body, tags, `/${req.file.destination.split('/').pop()}/${req.file.filename}`, profileId])
-          .then(data => res.json(data.rows[0]))
-          .catch(err => next(err));
+            .then(data => res.json(data.rows[0]))
+            .catch(err => next(err));
+        }
       }
     }
   });
+
 }
 
 function postAuthorizeRedditAccount(req, res, next) {
