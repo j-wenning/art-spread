@@ -153,7 +153,14 @@ function getRequestAccount(req, res, next) {
         'response_type=code',
         'client_id=EmIwQa2jhiAeCw',
         'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
-        'scope=identity+mysubreddits+submit+read+edit',
+        'scope=' + [
+          'edit',
+          'identity',
+          'mysubreddits',
+          'read',
+          'submit',
+          'vote'
+        ].join('+'),
         'state=' + req.session.authState,
         'duration=permanent'
       ].join('&'));
@@ -227,18 +234,17 @@ function getPost(req, res, next) {
               const [post, comments] = data;
               pubData.push({
                 analytics: {
-                  id: item.publicationId,
                   likes: post.data.children[0].data.ups,
+                  publicationId: item.publicationId,
                   type: item.type
                 },
                 comments: comments.data.children.map(comment => ({
                   body: comment.data.body,
                   handle: comment.data.author,
-                  id: item.publicationId,
                   liked: !!comment.data.likes,
+                  publicationId: item.publicationId,
                   time: comment.data.created_utc,
-                  type: item.type,
-                  url: `http://www.reddit.com${comment.data.permalink}`
+                  url: `https://www.reddit.com${comment.data.permalink}`
                 }))
               });
             })
@@ -309,10 +315,8 @@ function postPublish(req, res, next) {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            image: fs.readFileSync(post.imgPath).toString('base64'),
-            title: 'test title',
-            type: 'image/base64',
-            description: 'test body'
+            image: fs.readFileSync(path.join(__dirname, 'public', post.imgPath)).toString('base64'),
+            type: 'image/base64'
           })
         }).then(res => res.json())
           .then(data => {
@@ -437,7 +441,7 @@ function postAuthorizeRedditAccount(req, res, next) {
            SELECT "account_cte"."accountId", $6 AS "profileId"
              FROM "account_cte"
       ON CONFLICT DO NOTHING;
-      `, [
+    `, [
       data.name,
       account.access_token,
       account.refresh_token,
@@ -449,6 +453,109 @@ function postAuthorizeRedditAccount(req, res, next) {
       delete req.session.authState;
       res.redirect('http://localhost:3000');
     })
+    .catch(err => next(err));
+}
+
+function postLike(req, res, next) {
+  const userId = req.session.userId;
+  const publicationId = req.body.publicationId;
+  const commentUrl = req.body.commentUrl;
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!publicationId && publicationId !== 0) throw new ClientError('Requires publicationId', 400);
+  else if (!commentUrl && commentUrl !== 0) throw new ClientError('Requires commentUrl', 400);
+  else if (publicationId < 1) throw new ClientError('Invalid publicationId', 400);
+
+  db.query(`
+    SELECT "accountId",
+           "access",
+           "type"
+      FROM "accounts"
+      JOIN "publications" USING ("accountId")
+     WHERE "publicationId" = $1;
+  `, [publicationId])
+    .then(result => {
+      const acc = result.rows[0];
+
+      if (result.rowCount === 0) throw new ClientError('Account does not exist', 404);
+      if (acc.type === 'reddit') {
+        fetch(commentUrl.replace('www.', 'oauth.') + '.json', {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: 'Bearer ' + acc.access
+          }
+        }).then(res => res.json())
+          .then(data => {
+            const comment = data[1].data.children[0].data;
+            return fetch('https://oauth.reddit.com/api/vote', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: 'Bearer ' + acc.access
+              },
+              body: [
+                'dir=' + comment.likes ? 0 : 1,
+                'id=' + comment.name,
+                'rank=2' // unknown meaning
+              ].join('&')
+            });
+          }).then(() => res.sendStatus(202))
+          .catch(err => {
+            console.error(err);
+            next(err);
+          });
+      }
+    }).catch(err => next(err));
+}
+
+function deletePost(req, res, next) {
+  const userId = req.session.userId;
+  const postId = req.params.postId;
+
+  if (!userId) throw new ClientError('Requires userId', 403);
+  else if (!postId && postId !== 0) throw new ClientError('Requires postId', 400);
+  else if (postId < 1) throw new ClientError('Invalid postId', 400);
+  db.query(`
+    DELETE FROM "publications"
+          USING "accounts"
+          WHERE "postId" = $1
+      RETURNING "publicationId",
+                "url",
+                "access",
+                "type"
+  `, [postId])
+    .then(result => {
+      if (result.rowCount === 0) return 0;
+      result.rows = result.rows.map(item => {
+        if (item.type === 'reddit') {
+          return fetch(item.url + '.json')
+            .then(res => res.json())
+            .then(data => {
+              return fetch('https://oauth.reddit.com/api/del', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                  Authorization: 'Bearer ' + item.access
+                },
+                body: 'id=' + data[0].data.children[0].data.name
+              });
+            }).catch(err => console.error(err));
+        }
+      });
+      return Promise.all(result.rows);
+    }).then(() => {
+      return db.query(`
+        DELETE FROM "posts"
+              WHERE "postId" = $1
+          RETURNING "imgPath";
+      `, [postId]);
+    })
+    .then(result => {
+      if (result.rowCount === 0) throw new ClientError('Post does not exist', 404);
+      return fs.unlink(path.join(__dirname, 'public', result.rows[0].imgPath), err => {
+        if (err) next(err);
+      });
+    }).then(() => res.sendStatus(204))
     .catch(err => next(err));
 }
 
@@ -495,6 +602,10 @@ app.post('/api/profile/current/:profileId', postCurrentProfile);
 app.post('/api/post/', postPost);
 
 app.post('/api/account/reddit/authorize', postAuthorizeRedditAccount);
+
+app.post('/api/like/', refresh, postLike);
+
+app.delete('/api/post/:postId', refresh, deletePost);
 
 app.use(errorHandler);
 
