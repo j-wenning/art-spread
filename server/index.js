@@ -477,7 +477,7 @@ function postLike(req, res, next) {
     .then(result => {
       const acc = result.rows[0];
 
-      if (result.rowCount === 0) throw new ClientError('Account does not exist', 404);
+      if (result.rowCount === 0) throw new ClientError('Publication does not exist', 404);
       if (acc.type === 'reddit') {
         fetch(commentUrl.replace('www.', 'oauth.') + '.json', {
           headers: {
