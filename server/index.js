@@ -152,7 +152,7 @@ function getRequestAccount(req, res, next) {
       [
         'response_type=code',
         'client_id=EmIwQa2jhiAeCw',
-        'redirect_uri=http://localhost:3000/api/account/reddit/authorize',
+        'redirect_uri=http://art-spread.jwenning.digital/api/account/reddit/authorize',
         'scope=' + [
           'edit',
           'identity',
@@ -418,7 +418,7 @@ function postAuthorizeRedditAccount(req, res, next) {
     body: [
       'grant_type=authorization_code',
       'code=' + req.body.code,
-      'redirect_uri=http://localhost:3000/api/account/reddit/authorize'
+      'redirect_uri=http://art-spread.jwenning.digital/api/account/reddit/authorize'
     ].join('&')
   })
     .then(resp => resp.json())
@@ -451,7 +451,7 @@ function postAuthorizeRedditAccount(req, res, next) {
     ]))
     .then(() => {
       delete req.session.authState;
-      res.redirect('http://localhost:3000');
+      res.redirect('http://art-spread.jwenning.digital');
     })
     .catch(err => next(err));
 }
