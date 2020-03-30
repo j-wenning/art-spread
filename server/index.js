@@ -466,7 +466,7 @@ function errorHandler(err, req, res, next) {
 }
 
 function userUpdatesPassword(req, res, next) {
-  const { userId } = req.params;
+  const userId = req.session.userId;
   const { password } = req.body;
   const values = [password, userId];
 
@@ -566,7 +566,7 @@ function deleteAccounts(req, res, next) {
 }
 
 function deleteUser(req, res, next) {
-  const { userId } = req.params;
+  const userId = req.session.userId;
   const value = [userId];
 
   if (!Number(userId)) throw new ClientError(`${userId} must exist and has to be a positive integer`, 400);
@@ -585,7 +585,7 @@ function deleteUser(req, res, next) {
 }
 
 function updateProfiles(req, res, next) {
-  const { profileId } = req.params;
+  const profileId = req.session.profileId;
   const { name, imgPath } = req.body;
   const values = [name, imgPath, profileId];
 
@@ -621,7 +621,7 @@ function updateProfiles(req, res, next) {
 }
 
 function updateUserUsername(req, res, next) {
-  const { userId } = req.params;
+  const userId = req.session.userId;
   const { username } = req.body;
   const values = [username, userId];
 
