@@ -7,6 +7,7 @@ export default class ViewPost extends React.Component {
     super(props);
     this.post = this.props.params.post;
     this.state = {
+      published: this.post.published,
       analytics: [],
       comments: []
     };
@@ -27,20 +28,25 @@ export default class ViewPost extends React.Component {
     }
   }
 
+  publishPost() {
+    fetch(`/api/publish/${this.post.postId}`, {
+      method: 'POST'
+    }).then(() => this.setState({ published: true }))
+      .then(() => setTimeout(() => this.getPost(), 1500))
+      .catch(err => console.error(err));
+  }
+
   deletePost() {
-    fetch(`/api/posts/${event.target.id}`, {
+    fetch(`/api/post/${this.post.postId}`, {
       method: 'DELETE'
+    }).then(() => {
+      this.props.setView('dashboard', {});
     })
-      .then(res => res.json())
-      .then(data => {
-        this.setState({
-          comments: this.state.comments.concat(data)
-        });
-      });
+      .catch(err => console.error(err));
   }
 
   componentDidMount() {
-    this.getPost();
+    if (this.state.published) this.getPost();
   }
 
   handleClick(commentId) {
@@ -55,16 +61,16 @@ export default class ViewPost extends React.Component {
 
   render() {
     const comments = this.state.comments.map(comment => <CommentItem
-      key={comment.commentId}
+      key={comment.time}
       comment={comment}
       like={() => this.handleClick(comment.commentId)}
       setView={() => this.props.setView('viewComments', {})}/>);
     const analytics = this.state.analytics.map(analytic =>
       <AnalyticItem
-        key={analytic.id}
+        key={analytic.publicationId}
         analytic={analytic}
       />);
-    if (this.post.published) {
+    if (this.state.published) {
       return (
         <div>
           <div className="d-flex justify-content-center">
@@ -104,7 +110,7 @@ export default class ViewPost extends React.Component {
             {comments}
           </div>
           <div className="mt-2 d-flex flex-row w-100 justify-content-center">
-            <button onClick={this.deletePost} className="btn btn-custom text-custom-primary">
+            <button onClick={() => this.deletePost()} className="btn btn-custom text-custom-primary">
             Delete post
             </button>
           </div>
@@ -147,10 +153,10 @@ export default class ViewPost extends React.Component {
             </div>
           }
           <div className="mt-2 d-flex flex-row w-100 justify-content-around">
-            <button className="btn btn-custom text-custom-primary">
+            <button onClick={() => this.publishPost()} className="btn btn-custom text-custom-primary">
               Publish post
             </button>
-            <button onClick={this.deletePost} className="btn btn-custom text-custom-primary">
+            <button onClick={() => this.deletePost()} className="btn btn-custom text-custom-primary">
               Delete post
             </button>
           </div>
