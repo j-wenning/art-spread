@@ -140,7 +140,7 @@ export default class App extends React.Component {
         return (
           <div className="app">
             <Header setView={this.setView} title={this.state.view.name} />
-            <ViewComments setView={this.setView} />
+            <ViewComments setView={this.setView} params={this.state.view.params} />
           </div>
         );
     }
