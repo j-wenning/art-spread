@@ -335,8 +335,8 @@ COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM st
 --
 
 COPY public.accounts ("accountId", type, name, access, refresh, expiration, "userId") FROM stdin;
-2	reddit	Art_Spread_	472782679034-WWFpsqCAFTt8VGGKlburmxY7rnE	472782679034-6dj-fbXvXS0WdnwzohGqlZwZGkA	1585184093677	1
-1	reddit	Art_Spread	466923361867-t37JuX3MTE9qs1LozLLVjWa-viM	466923361867-GcEBPMTJAl_SMHRTm4pQ3invtMU	1585184093856	1
+1	reddit	Art_Spread	466923361867-whLs2OGg8ZWuUNokzFml0o0r7rE	466923361867-Ct7XgALceGaz4sB-QAyT7E5BJKg	1585453222324	1
+2	reddit	Art_Spread_	472782679034-zV6O3hgHtNiGzU8L0qCn5vfiPwQ	472782679034-wD4pysspR1Z_euBXI4rhMvzgsus	1585453222426	1
 \.
 
 
@@ -345,7 +345,6 @@ COPY public.accounts ("accountId", type, name, access, refresh, expiration, "use
 --
 
 COPY public.posts ("postId", title, "imgPath", body, tags, "profileId") FROM stdin;
-1	Sample Title	/images/1585179661586-1-4.png	S  a  m  p  l  e    b  o  d  y	#tag1#tag2#tag3	1
 2	A Masterpiece	/images/1585271031909-1-436.png	Like forreal just check out how good I am at drawing.	#lit#sick#amazing	1
 3	And here's another example.	/images/1585271445187-1-566.png	This time I won't include tags.	\N	1
 4	Like yo I'm so cool.	/images/1585271841388-1-908.png	\N	#tagless#cool#nice	1
@@ -366,8 +365,8 @@ COPY public.profiles ("profileId", name, "imgPath", "userId") FROM stdin;
 --
 
 COPY public.publications ("publicationId", url, "accountId", "postId") FROM stdin;
-1	https://www.reddit.com/r/testingground4bots/comments/fp15g5/sample_title/	2	1
-2	https://www.reddit.com/r/testingground4bots/comments/fp15g4/sample_title/	1	1
+3	https://www.reddit.com/r/testingground4bots/comments/fqc1ps/a_masterpiece/	1	2
+4	https://www.reddit.com/r/testingground4bots/comments/fqc1pr/a_masterpiece/	2	2
 \.
 
 
@@ -384,14 +383,14 @@ COPY public.users ("userId", username, password) FROM stdin;
 -- Name: account-profile-links_linkId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 2, true);
+SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 4, true);
 
 
 --
 -- Name: accounts_accountId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."accounts_accountId_seq"', 2, true);
+SELECT pg_catalog.setval('public."accounts_accountId_seq"', 4, true);
 
 
 --
@@ -412,7 +411,7 @@ SELECT pg_catalog.setval('public."profiles_profileId_seq"', 1, true);
 -- Name: publications_publicationId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."publications_publicationId_seq"', 2, true);
+SELECT pg_catalog.setval('public."publications_publicationId_seq"', 4, true);
 
 
 --
