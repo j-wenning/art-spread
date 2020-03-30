@@ -78,10 +78,10 @@ export default class ViewComments extends Component {
       <div className="container">
         <div className="row">
           <img className="profile-picture-small ml-2 mr-3" src="./assets/images/default-profile.svg"/>
-          <h5 className="w-75 p-2 mb-3 ml-2 row text-custom-primary commenter">{this.comment.handle}</h5>
+          <h5 className="w-75 p-2 mb-3 ml-2 row text-custom-primary text-plate">{this.comment.handle}</h5>
         </div>
         <div className="w-100">
-          <div className="post-body p-2 text-custom-primary ml-1 mb-3 mt-1">
+          <div className="text-plate p-2 text-custom-primary ml-1 mb-3 mt-1">
             {this.comment.body}
           </div>
         </div>
