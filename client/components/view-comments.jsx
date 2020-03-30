@@ -4,18 +4,13 @@ import CommentItem from './comment-item';
 export default class ViewComments extends Component {
   constructor(props) {
     super(props);
+    this.comment = this.props.params.comment;
     this.state = {
-      comment: {
-        commenter: 'sample vanity',
-        liked: false,
-        commentBody: 'sample comment',
-        commentId: 'sample'
-      },
       reply: '',
       commentThread: Array(5).fill(0).map((item, i) => ({
-        commenter: 'commenter vanity',
+        handle: 'commenter vanity',
         liked: false,
-        commentBody: 'comment body',
+        body: 'comment body',
         commentId: i
       }))
     };
@@ -23,33 +18,6 @@ export default class ViewComments extends Component {
     this.handleClick = this.handleClick.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.createCommentsThread = this.createCommentsThread.bind(this);
-  }
-
-  componentDidMount() {
-    this.getComment();
-    this.getCommentThread();
-  }
-
-  getComment() {
-    const commentId = this.props.commentId;
-    fetch(`/api/comments/${commentId}`)
-      .then(res => res.json())
-      .then(data => {
-        this.setState({
-          comment: data
-        });
-      });
-  }
-
-  getCommentThread() {
-    const commentId = this.props.commentId;
-    fetch(`/api/comments/${commentId}`)
-      .then(res => res.json())
-      .then(data => {
-        this.setState({
-          commentThread: data
-        });
-      });
   }
 
   handleChange(e) {
@@ -60,20 +28,7 @@ export default class ViewComments extends Component {
 
   handleSubmit(e) {
     e.preventDefault();
-    const commentId = this.props.commentId;
-    const newReply = {
-      reply: this.state.reply
-    };
-    const fetchParams = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newReply)
-    };
-    fetch(`/api/comments/${commentId}`, fetchParams)
-      .then(res => {
-        console.warn(res);
-      });
-    this.props.setView('viewPost', {});
+    this.props.setView('viewPost', { post: this.props.params.post });
     this.setState({
       reply: ''
     });
@@ -96,11 +51,9 @@ export default class ViewComments extends Component {
         return (
           <CommentItem
             key={comment.commentId}
-            commenter={comment.commenter}
+            setView={() => this.props.setView('viewComments', { comment: comment })}
             like={() => this.handleClick(comment.commentId)}
-            liked={comment.liked}
-            commentBody={comment.commentBody}
-            id={comment.commentId}/>
+            comment={comment}/>
         );
       })
     );
@@ -112,11 +65,11 @@ export default class ViewComments extends Component {
       <div className="container">
         <div className="row">
           <img className="profile-picture-small ml-2 mr-3" src="./assets/images/default-profile.svg"/>
-          <h5 className="w-75 p-2 mb-3 ml-2 row text-custom-primary commenter">{this.state.comment.commenter}</h5>
+          <h5 className="w-75 p-2 mb-3 ml-2 row text-custom-primary text-plate">{this.comment.handle}</h5>
         </div>
         <div className="w-100">
-          <div className="post-body p-2 text-custom-primary ml-1 mb-3 mt-1">
-            {this.state.comment.commentBody}
+          <div className="text-plate p-2 text-custom-primary ml-1 mb-3 mt-1">
+            {this.comment.body}
           </div>
         </div>
         <div className="w-100">

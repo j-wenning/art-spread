@@ -145,6 +145,12 @@ h1 {
   margin-left: 260px;
 }
 
+.reply {
+  height: 175px;
+  width: 100%;
+  border-radius: 10px;
+}
+
 .unliked {
   vertical-align: middle;
   color: black;
