@@ -497,7 +497,7 @@ function userUpdatesPassword(req, res, next) {
       }
     })
     .catch(err => {
-      if (err.code) next(new ClientError('need new password', 400));
+      if (err.code === '23502') next(new ClientError('need new password', 400));
       else next(err);
     });
 }
@@ -652,7 +652,56 @@ function updateUserUsername(req, res, next) {
       }
     })
     .catch(err => {
-      if (err.code) next(new ClientError('username taken', 400));
+      console.error(err.code);
+      if (err.code === '23502') next(new ClientError('username taken', 400));
+      else next(err);
+    });
+}
+
+function postLink(req, res, next) {
+  const { accountId, profileId } = req.body;
+  const values = [accountId, profileId];
+
+  const sql = `
+    INSERT INTO "account-profile-links" ("accountId", "profileId")
+    VALUES ($1, $2)
+    `;
+
+  if (!Number(accountId)) throw new ClientError('accountId has to be a positive integter', 400);
+  else if (!Number(profileId)) throw new ClientError('profileId has to be a positive integter', 400);
+
+  db.query(sql, values)
+    .then(result => {
+      const data = result.rows[0];
+      res.status(200).json(data);
+    })
+    .catch(err => {
+      console.error('!!!', err.code === '23503');
+      if (err.code === '23503') next(new ClientError('username taken', 400));
+      else next(err);
+    });
+}
+
+function deleteLink(req, res, next) {
+  const { linkId } = req.params;
+  const value = [linkId];
+
+  const sql = `
+  DELETE FROM
+  "account-profile-links"
+  WHERE "linkId" = $1
+  `;
+
+  if (!Number(linkId)) {
+    throw new ClientError(`${linkId} must exist and has to be a positive integer`, 400);
+  }
+
+  db.query(sql, value)
+    .then(result => {
+      res.status(200).json(result.rows[0]);
+    })
+    .catch(err => {
+      if (err.code === '22P02') next(new ClientError('username taken', 400));
       else next(err);
     });
 }
@@ -661,6 +710,10 @@ app.use(staticMiddleware);
 app.use(sessionMiddleware);
 
 app.use(express.json());
+
+app.post('/api/link', postLink);
+
+app.delete('/api/link/:linkId', deleteLink);
 
 app.delete('/api/post/:postId', deletePost);
 
