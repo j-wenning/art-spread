@@ -64,7 +64,7 @@ export default class ViewPost extends React.Component {
       key={comment.time}
       comment={comment}
       like={() => this.handleClick(comment.commentId)}
-      setView={() => this.props.setView('viewComments', { comment: comment })}/>);
+      setView={() => this.props.setView('viewComments', { comment: comment, post: this.post })}/>);
     const analytics = this.state.analytics.map(analytic =>
       <AnalyticItem
         key={analytic.publicationId}

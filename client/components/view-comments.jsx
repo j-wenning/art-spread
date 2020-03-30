@@ -28,7 +28,7 @@ export default class ViewComments extends Component {
 
   handleSubmit(e) {
     e.preventDefault();
-    const commentId = this.props.commentId;
+    const postId = this.props.params.post.postId;
     const newReply = {
       reply: this.state.reply
     };
@@ -37,11 +37,11 @@ export default class ViewComments extends Component {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newReply)
     };
-    fetch(`/api/comments/${commentId}`, fetchParams)
+    fetch(`/api/publish/${postId}`, fetchParams)
       .then(res => {
         console.warn(res);
       });
-    this.props.setView('viewPost', {});
+    this.props.setView('viewPost', { post: this.props.params.post });
     this.setState({
       reply: ''
     });
