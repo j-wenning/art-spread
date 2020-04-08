@@ -14,5 +14,50 @@
 * Convenient account management
 * Friendly UI/UX
 
-## Dependency List
-tbd...
+## Technologies Used
+* React.js
+* Webpack 4
+* Bootstrap 4
+* Node.js
+* PostgreSQL
+* HTML5
+* CSS3
+* AWS EC2
+
+## Live Demo
+Try the application live at https://art-spread.jwenning.digital/
+
+## Features
+* User can login.
+* User can view created posts and pending posts.
+* User can create posts and delete posts.
+* User can publish posts to reddit.
+* User can link social media accounts.
+
+## Preview
+![alt text](./images/art-spread.gif)
+
+## Development
+### System Requirements
+* Node.js 10 or higher
+* NPM 6 or higher
+* Postgre 10 or higher
+
+### Getting Started
+1. Clone the repository.
+
+`git clone https://github.com/j-wenning/art-spread`
+
+`cd art-spread`
+
+2. Install all dependencies with NPM.
+
+`npm install`
+
+3. Import the example database to PostgreSQL.
+
+`npm run db:import`
+
+4. Start the project. Once started you can view the application by opening http://localhost:3000 in your browser.
+
+`npm run dev`
