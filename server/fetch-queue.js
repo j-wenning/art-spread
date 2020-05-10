@@ -61,6 +61,7 @@ module.exports = class FetchQueue {
         this.items.shift();
         this.dequeue();
       } else {
+        console.error('Expired');
         this.items.push(this.items.shift());
         this.dequeue();
       }
