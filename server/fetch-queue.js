@@ -3,7 +3,7 @@ module.exports = class FetchQueue {
     this.items = [];
     this.knownPlatforms = ['reddit', 'imgur'];
     this.waitTimes = new Array(this.knownPlatforms.length).fill(0);
-    this.expiry = 3 * 60 * 1000;
+    this.expiry = 25 * 1000;
     this.offset = 10 * 1000;
   }
 
@@ -32,14 +32,12 @@ module.exports = class FetchQueue {
     }
     item.timestamp = timestamp;
     this.items.push(item);
-    if (this.items.length === 1) {
-      this.dequeue();
-    }
+    if (this.items.length === 1) this.dequeue();
   }
 
   dequeue() {
     setTimeout(() => {
-      const { platforms, action, timestamp } = this.items[0];
+      const { action, expiry, platforms, timestamp } = this.items[0];
       if (this.getWait(platforms).reduce((a, b) => a > b ? a : b, 0) < Date.now()) {
         this.items.shift();
         action()
@@ -53,15 +51,14 @@ module.exports = class FetchQueue {
                 this.setWait(platform, Date.now() + this.offset + time);
               }
             });
-            if (this.items.length >= 1) {
-              this.dequeue();
-            }
+            if (this.items.length > 0) this.dequeue();
           }).catch(err => console.error(err));
       } else if (Date.now() - timestamp > this.expiry) {
+        const time = this.getWait(platforms).sort((a, b) => b - a)[0];
+        expiry(time);
         this.items.shift();
-        this.dequeue();
+        if (this.items.length > 0) this.dequeue();
       } else {
-        console.error('Expired');
         this.items.push(this.items.shift());
         this.dequeue();
       }
