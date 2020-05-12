@@ -15,4 +15,5 @@
 * Friendly UI/UX
 
 ## Dependency List
-tbd...
+* Multer
+* node-fetch
