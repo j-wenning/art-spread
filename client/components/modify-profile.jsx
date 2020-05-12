@@ -1,182 +1,201 @@
 import React from 'react';
-import AccountItem from './account-item';
-import ListItem from './list-item';
 
-class ModifyProfile extends React.Component {
+export default class ModifyProfile extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      accounts: [],
-      lists: [],
-      vanityHandle: '',
+      avatar: '',
+      name: '',
       bio: '',
-      image: './assets/images/default-profile.svg'
+      avatarError: false,
+      rawAvatar: null,
+      accounts: []
     };
-    this.handleImage = this.handleImage.bind(this);
-    this.getAccounts = this.getAccounts.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.goToDashboard = this.goToDashboard.bind(this);
-    this.deleteAccount = this.deleteAccount.bind(this);
   }
 
-  goToDashboard(event) {
-    this.props.setView('dashboard', {});
-  }
-
-  handleChange(event) {
-    this.setState({ [event.target.id]: event.target.value });
-  }
-
-  handleSubmit(event) {
-    event.preventDefault();
-    const newSubmission = {
-      vanityHandle: this.state.vanityHandle,
-      bio: this.state.bio
-    };
-    const formData = new FormData();
-    formData.append('image', this.state.image);
-    fetch(`/api/profiles/${formData}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    }).then(res => {
-      console.warn(res);
-    });
-    this.goToDashboard();
-    this.props.setProfile(newSubmission);
-    this.setState({
-      vanityHandle: '',
-      bio: ''
-    });
-    event.currentTarget.reset();
-  }
-
-  handleImage(event) {
-    this.setState({
-      image: URL.createObjectURL(event.target.files[0])
+  toggleLinked(index) {
+    if (this.state.accounts[index].isLinked) this.props.deleteLink(index);
+    else this.props.createLink(index);
+    this.setState(state => {
+      const account = state.accounts[index];
+      account.isLinked = !account.isLinked;
+      return state;
     });
   }
 
-  getAccounts() {
-    fetch('/api/accounts')
-      .then(res => res.json())
-      .then(data => {
-
-        if (data.associated) {
-          this.setState({ accounts: data });
-        } else if (!data.associated) {
-          this.setState({ lists: data });
-        }
-      });
-  }
-
-  deleteAccount() {
-    const eventTarget = event.target.id;
-    fetch(`/api/profiles/${eventTarget}`, {
-      method: 'DELETE'
-    })
-      .then(() => {
-        function test(account) {
-          return account.accountId !== Number(eventTarget);
-        }
-        const newArr = this.state.accounts.filter(test);
-        this.setState({
-          accounts: newArr
+  stateUpdate(e) {
+    const id = e.currentTarget.id;
+    const value = e.currentTarget.value;
+    if (id === 'avatar') {
+      const file = e.currentTarget.files[0];
+      if (file.size < 10000) {
+        const fr = new FileReader();
+        fr.onload = () => this.setState({
+          avatar: file,
+          avatarError: false,
+          rawAvatar: fr.result
         });
-      });
+        fr.onerror = () => console.error(fr.error);
+        fr.readAsDataURL(file);
+      } else this.setState({ avatar: '', rawAvatar: '', avatarError: true });
+    } else this.setState({ [id]: value.trim() });
   }
 
   componentDidMount() {
-    this.getAccounts();
+    this.props.fetchAccounts()
+      .then(data => this.setState({ accounts: data }))
+      .catch(err => console.error(err));
   }
 
   render() {
-    return (
-      <div>
-        <form encType="multipart/form-data"
-          className="form" id={this.props.profileId}
-          onSubmit={this.handleSubmit}>
-          <div className="row d-flex justify-content-center">
-            <img className="profile-picture mr-2" src={this.state.image} alt="" />
-            <label htmlFor="image-file" className="custom-file-upload btn btn-custom
-          text-custom-primary avatar-btn mt-4 ml-2 w-50">
-            Upload avatar</label>
-            <input onChange={this.handleImage}
-              id="image-file" type="file" className="imageInput" />
-          </div>
-          <div className="mt-3 w-100">
-            <div className="text-custom-primary ml-1 mb-1 mt-1">
-              Vanity handle
-            </div>
-            <textarea
-              className="generalText form-control"
-              type="text"
-              id="vanityHandle"
-              placeholder="vanity handle"
-              onChange={this.handleChange}
-            />
-          </div>
-          <div className="w-100">
-            <div className="text-custom-primary ml-1 mb-1 mt-1">
-              Bio
-            </div>
-            <textarea
-              className="generalText form-control"
-              type="text"
-              id="bio"
-              placeholder="bio"
-              onChange={this.handleChange}
-            />
-          </div>
-          <div className="dropdown mt-4">
-            <div className="text-custom-primary ml-1 mb-1 mt-1">
-              Profile accounts
-            </div>
-            <button className="w-75 btn btn-custom text-custom-primary d-flex justify-content-around
-            dropdown-toggle" type="button" id="dropdownMenu2" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">
-              dissociated accounts
-            </button>
-            <div onChange={this.handleChange} className="w-75 text-custom-primary dropdown-menu p-0"
-              aria-labelledby="dropdownMenu2">
-              {this.state.lists.map(list => {
-                return (
-                  <ListItem
-                    key={list.accountId}
-                    name={list.name}
-                    id={list.accountId}
-                  />);
-              })
-              }
-            </div>
-          </div>
-          <div className="row mt-3">
-            <div className="col">
-              <div className="list overflow-auto">
-                {this.deleteAccount && this.state.accounts.map(account => {
-                  return (
-                    <AccountItem
-                      key={account.accountId}
-                      name={account.name}
-                      id={account.accountId}
-                    />);
-                })
-                }
+    let hasNoLinks = true;
+    const defaultPfp = '/assets/images/default-profile.svg';
+    const linkedAccounts = this.state.accounts.map((item, index) => {
+      if (item.isLinked) {
+        hasNoLinks = false;
+        return (
+          <div key={index} className="account col-12">
+            <div className="row p-2">
+              <div
+                className="btn-custom-menu d-flex justify-content-center align-items-center border-0">
+                <h2 className="m-0 text-primary">
+                  <i className={`fab fa-${item.type}`}/>
+                </h2>
               </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="mt-2 d-flex flex-row w-100 justify-content-end mr-4">
-              <button typ="submit" className="btn btn-custom text-custom-primary">
-               Submit
+              <div className="col">
+                <p
+                  className="col-12 rounded-15 bg-primary text-center text-truncate text-primary p-3">
+                  {item.name}
+                </p>
+              </div>
+              <button
+                onClick={() => this.toggleLinked(index)}
+                type="button"
+                className="btn btn-custom-menu border-0">
+                <i className="fas fa-unlink text-danger"/>
               </button>
             </div>
           </div>
-        </form>
+        );
+      }
+    });
+    const unlinkedAccounts = this.state.accounts.map((item, index) => {
+      if (!item.isLinked) {
+        return (
+          <button
+            onClick={() => this.toggleLinked(index)}
+            key={index}
+            type="button"
+            className="dropdown-item border-bottom">
+            <div
+              className="row d-flex text-secondary align-items-center">
+              <h3 className="mb-0 mr-2">
+                <i className={`fab fa-${item.type}`}/>
+              </h3>
+              {item.name}
+            </div>
+          </button>
+        );
+      }
+    });
+    return (
+      <div className="modify-profile container">
+        <div className="row">
+          <div className="col-6">
+            <img
+              src={this.state.rawAvatar || (this.props.profile ? this.props.profile.imgPath || defaultPfp : defaultPfp)}
+              alt=""
+              className="img-window border rounded-circle border-secondary bg-primary"/>
+          </div>
+          <div className="col-6 d-flex justify-content-center align-items-center">
+            <div>
+              <label
+                htmlFor="avatar"
+                className="btn btn-custom d-flex justify-content-center align-items-center text-capitalize mt-2">
+                upload avatar
+              </label>
+              <input
+                onChange={e => this.stateUpdate(e)}
+                type="file"
+                id="avatar"
+                accept=".jpg, .jpeg, .png, .svg"
+                className="d-none"/>
+              {this.state.avatar && (
+                <button
+                  onClick={() => { this.setState({ avatar: '', rawAvatar: null }); }}
+                  type="button"
+                  className="btn btn-custom text-capitalize">
+                    cancel
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        {this.state.avatarError && (
+          <div className="alert alert-danger mt-1" role="alert">
+            <p>Image exceeds maximum filesize (10KB)!</p>
+            <p className="mb-0">
+                Since this is a simple proof of concept, space must be conserved.
+            </p>
+          </div>
+        )}
+        <h3 className="text-primary text-capitalize mt-3">vanity handle</h3>
+        <input
+          onChange={e => this.stateUpdate(e)}
+          id="name"
+          type="text"
+          placeholder="enter vanity handle here..."
+          defaultValue={this.props.profile ? this.props.profile.name : ''}
+          className="col-12 border-secondary rounded bg-primary p-3"/>
+        <h3 className="text-primary text-capitalize mt-3">bio</h3>
+        <textarea
+          onChange={e => this.stateUpdate(e)}
+          id="bio"
+          type="text"
+          placeholder="enter bio here..."
+          defaultValue={this.props.profile ? this.props.profile.bio : ''}
+          className="col-12 border-secondary rounded bg-primary p-3"/>
+        <h3 className="text-primary text-capitalize mt-3">profile accounts</h3>
+        <div className="dropdown">
+          <button
+            type="button"
+            id="unlinkedAccountsDropdown"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+            className="btn btn-custom dropdown-toggle d-flex justify-content-between align-items-center text-capitalize mx-auto">
+            unlinked accounts
+          </button>
+          <div
+            aria-labelledby="loginDropdown"
+            className="dropdown-menu p-0">
+            {unlinkedAccounts}
+          </div>
+        </div>
+        <div className="vh-60 overflow-auto bg-secondary py-4 mt-2">
+          {linkedAccounts}
+          {hasNoLinks && (
+            <div className="col-12">
+              <p
+                className="bg-primary rounded text-primary text-center text-capitalize py-2">
+                no linked accounts
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="text-center">
+          <button
+            onClick={() => this.props.modifyProfile({
+              avatar: this.state.avatar,
+              name: this.state.name,
+              bio: this.state.bio
+            })}
+            type="button"
+            className="btn btn-custom text-capitalize mt-4">
+            save
+          </button>
+        </div>
       </div>
     );
   }
 }
-
-export default ModifyProfile;
