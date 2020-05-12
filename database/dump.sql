@@ -30,7 +30,6 @@ ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "unique-account-
 ALTER TABLE ONLY public.publications DROP CONSTRAINT publications_pk;
 ALTER TABLE ONLY public.profiles DROP CONSTRAINT profiles_pk;
 ALTER TABLE ONLY public.posts DROP CONSTRAINT posts_pk;
-ALTER TABLE ONLY public.posts DROP CONSTRAINT "posts_imgPath_key";
 ALTER TABLE ONLY public.accounts DROP CONSTRAINT accounts_pk;
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "account-profile-links_pk";
 ALTER TABLE public.users ALTER COLUMN "userId" DROP DEFAULT;
@@ -329,6 +328,8 @@ ALTER TABLE ONLY public.users ALTER COLUMN "userId" SET DEFAULT nextval('public.
 --
 
 COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM stdin;
+12	3	12
+15	4	12
 \.
 
 
@@ -337,6 +338,8 @@ COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM st
 --
 
 COPY public.accounts ("accountId", type, name, access, refresh, expiration, "userId") FROM stdin;
+4	reddit	Art_Spread_	472782679034-Q8Kqfkiv-x6nmpHXzaVFgs-Oa2s	472782679034-RR0JSc6FAsMqK5nHVEt9VzXSf2Y	1589322144208	1
+3	reddit	Art_Spread	466923361867-J6N1Ptqsj2Wg2YyfvRTJ7oK4qNA	466923361867-qCkzH0_lUWaitolSGuYPrZMLqXI	1589322144209	1
 \.
 
 
@@ -345,7 +348,9 @@ COPY public.accounts ("accountId", type, name, access, refresh, expiration, "use
 --
 
 COPY public.posts ("postId", "imgPath", title, body, tags, "profileId") FROM stdin;
-15	/images/dW5kZWZpbmVkLTE1ODg4Mjk1NjAwNzA=.png				1
+27	/images/dW5kZWZpbmVkLTE1ODkwMDIxMjI3MjA=.png	properly working	[insert thinking emoji here]		12
+33	/images/dW5kZWZpbmVkLTE1ODkzMTg4Mzk0NDQ=.png				12
+34		a new test	for testing purposes		12
 \.
 
 
@@ -354,9 +359,7 @@ COPY public.posts ("postId", "imgPath", title, body, tags, "profileId") FROM std
 --
 
 COPY public.profiles ("profileId", name, bio, "imgPath", "userId") FROM stdin;
-1	new profile	\N	\N	1
-2	new profile	\N	\N	2
-3	new profile	\N	\N	3
+12	test profile 1	\N	\N	1
 \.
 
 
@@ -365,6 +368,12 @@ COPY public.profiles ("profileId", name, bio, "imgPath", "userId") FROM stdin;
 --
 
 COPY public.publications ("publicationId", url, "accountId", "postId") FROM stdin;
+5	https://www.reddit.com/r/testingground4bots/comments/gg9l0v/properly_working/	4	27
+6	https://www.reddit.com/r/testingground4bots/comments/gg9l0w/properly_working/	3	27
+13	https://www.reddit.com/r/testingground4bots/comments/gil28g/httpsiimgurcomgd4ztv9png/	3	33
+14	https://www.reddit.com/r/testingground4bots/comments/gil28h/httpsiimgurcomgd4ztv9png/	4	33
+15	https://www.reddit.com/r/testingground4bots/comments/gilbgi/a_new_test/	4	34
+16	https://www.reddit.com/r/testingground4bots/comments/gilbgj/a_new_test/	3	34
 \.
 
 
@@ -383,35 +392,35 @@ COPY public.users ("userId", username, password) FROM stdin;
 -- Name: account-profile-links_linkId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 1, false);
+SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 15, true);
 
 
 --
 -- Name: accounts_accountId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."accounts_accountId_seq"', 1, false);
+SELECT pg_catalog.setval('public."accounts_accountId_seq"', 4, true);
 
 
 --
 -- Name: posts_postId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."posts_postId_seq"', 15, true);
+SELECT pg_catalog.setval('public."posts_postId_seq"', 35, true);
 
 
 --
 -- Name: profiles_profileId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."profiles_profileId_seq"', 7, true);
+SELECT pg_catalog.setval('public."profiles_profileId_seq"', 12, true);
 
 
 --
 -- Name: publications_publicationId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."publications_publicationId_seq"', 1, false);
+SELECT pg_catalog.setval('public."publications_publicationId_seq"', 18, true);
 
 
 --
@@ -435,14 +444,6 @@ ALTER TABLE ONLY public."account-profile-links"
 
 ALTER TABLE ONLY public.accounts
     ADD CONSTRAINT accounts_pk PRIMARY KEY ("accountId");
-
-
---
--- Name: posts posts_imgPath_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT "posts_imgPath_key" UNIQUE ("imgPath");
 
 
 --
