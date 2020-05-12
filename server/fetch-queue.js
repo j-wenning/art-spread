@@ -1,8 +1,11 @@
+const fs = require('fs');
+const path = require('path');
+
 module.exports = class FetchQueue {
   constructor() {
     this.items = [];
     this.knownPlatforms = ['reddit', 'imgur'];
-    this.waitTimes = new Array(this.knownPlatforms.length).fill(0);
+    this.waitTimes = JSON.parse(fs.readFileSync(path.join(__dirname, 'waitTimes.json')));
     this.expiry = 25 * 1000;
     this.offset = 10 * 1000;
   }
@@ -15,6 +18,7 @@ module.exports = class FetchQueue {
 
   setWait(platform, val) {
     this.waitTimes[this.knownPlatforms.indexOf(platform)] = val;
+    fs.writeFileSync(path.join(__dirname, 'waitTimes.json'), JSON.stringify(this.waitTimes, null, 2));
   }
 
   enqueue(item) {
@@ -54,7 +58,7 @@ module.exports = class FetchQueue {
             if (this.items.length > 0) this.dequeue();
           }).catch(err => console.error(err));
       } else if (Date.now() - timestamp > this.expiry) {
-        const time = this.getWait(platforms).sort((a, b) => b - a)[0];
+        const time = (this.getWait(platforms).sort((a, b) => b - a)[0]) - Date.now();
         expiry(time);
         this.items.shift();
         if (this.items.length > 0) this.dequeue();
