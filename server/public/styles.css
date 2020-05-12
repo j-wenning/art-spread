@@ -1,236 +1,84 @@
 @import url(./assets/css/fonts.css);
 
 body {
-  margin: 0;
-  background-color: rgb(250,248,243);
-  font-family: "Quicksand", Arial, Helvetica, sans-serif;
-}
-
-h1 {
-  font-size: 24pt !important;
+  font-family: 'Quicksand';
+  background-color: #fafaf0;
 }
 
 .app {
-  box-sizing: border-box;
-  width: 95%;
-  margin: 15px auto;
-  padding: 10px 10px 15px;
+  max-width: 500px;
+}
+
+.vh-60 {
+  height: 60vh;
+}
+
+.btn-custom,
+.btn-custom-no-width,
+.text-brand,
+.text-primary {
+  color: #690000 !important;
+}
+
+.btn-custom-menu,
+.img-window,
+.text-secondary {
+  color: #494969 !important;
+}
+
+.btn-custom,
+.btn-custom-menu,
+.btn-custom-no-width,
+.bg-primary {
+  background-color: #eeeeee !important;
+}
+
+.btn-custom,
+.btn-custom-menu,
+.btn-custom-no-width {
+  border: 2px solid;
   border-radius: 15px;
-  background-color: rgba(0,0,0,.15);
+}
+
+.btn-custom,
+.btn-custom-no-width {
+  min-height: 55px;
 }
 
 .btn-custom {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 60px;
-  border-radius: 15px;
-  border: 2px solid rgb(73, 73, 105);
-  background-color: rgb(238, 238, 238);
-  box-shadow: 0 4px 4px 1px rgba(0,0,0,.25);
+  min-width: 175px;
 }
 
-.text-custom-primary {
-  color: rgb(105, 0, 0);
+.btn-custom-menu {
+  height: 55px;
+  width: 55px;
 }
 
-.text-custom-primary:hover {
-  color: rgb(161, 39, 39);
+.text-brand {
+  font-family: 'Poiret One';
+  text-decoration: underline;
 }
 
-.text-custom-secondary {
-  color: rgb(73, 73, 105);
+.border-primary {
+  border-width: 2px !important;
+  border-color: #690000 !important;
 }
 
-.text-custom-secondary:hover {
-  color: rgb(107, 107, 146);
+.border-secondary {
+  border-width: 2px !important;
+  border-color: #494969 !important;
 }
 
-.header {
-  border-bottom: 2px solid rgb(73, 73, 105);
+.bg-secondary {
+  background-color: #b6b6b6 !important;
 }
 
-.profile-picture {
-  border-radius: 100%;
-  border: 2px solid rgb(73, 73, 105);
-  background-color: rgb(238, 238, 238);
+.img-window {
   height: 125px;
+  width: 125px;
+  object-fit: cover;
 }
 
-.profile-picture-small {
-  border-radius: 100%;
-  border: 2px solid rgb(73, 73, 105);
-  background-color: rgb(238, 238, 238);
-  height: 45px;
-}
-
-.brand {
-  font-family: "PoiretOne";
-}
-
-.list {
-  box-sizing: border-box;
-  height: 400px;
-  padding: 1px 15px;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  background-color: rgb(182, 182, 182);
-}
-
-.prof-list {
-  box-sizing: border-box;
-  height: 520px;
-  padding: 1px 15px;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  background-color: rgb(182, 182, 182);
-}
-
-.horizontal-list {
-  box-sizing: border-box;
-  height: 50px;
-  padding: 1px 15px;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  background-color: rgb(182, 182, 182);
-}
-
-.post-preview {
-  margin: 10px 0;
-  padding: 10px 10px;
-  border-bottom: 2px solid rgb(73, 73, 105);
-}
-
-.post-preview:last-child {
-  border: none;
-}
-
-.post-preview-fields {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  height: 30px
-}
-
-.preview-image {
-  border: 2px solid rgb(73, 73, 105);
-  background-color: rgb(238, 238, 238);
-  height: 100px;
-  width: 100px
-}
-
-.preview-image-lg {
-  border: 2px solid rgb(73, 73, 105);
-  background-color: rgb(238, 238, 238);
-  height: 150px;
-}
-
-.text-plate {
-  padding: 3px 10px;
-  min-height: 25px;
-  margin: 5px 0;
+.rounded-15 {
   border-radius: 15px;
-  background-color: rgb(238, 238, 238);
-}
-
-.imageInput {
-  display: none;
-}
-
-.custom-file-upload {
-    cursor: pointer;
-}
-
-.reply-button {
-  margin-left: 260px;
-}
-
-.reply {
-  height: 175px;
-  width: 100%;
-  border-radius: 10px;
-}
-
-.unliked {
-  vertical-align: middle;
-  color: black;
-}
-
-.liked {
-  vertical-align: middle;
-  color: red;
-}
-
-.trash {
-  font-size: 24px;
-  border-radius: 10px;
-}
-
-.profile-name {
-  border-radius: 10px;
-}
-
-.pending-icon {
-  font-weight: bold;
-  color: maroon;
-  position: absolute;
-  font-size: 145%;
-  top: 18%;
-  left: 82%;
-  transform: translate(-50%, -50%)
-}
-
-.fa-border-icon {
-    border-width: 3px;
-    border-style: solid;
-    border-color: rgb(238, 238, 238);
-    border-image: initial;
-    border-radius: 50% 50% 50% 50%;
-}
-
-.pending-icon-relative {
-    position: relative;
-}
-
-.dropdown-background {
-  background-color: rgb(238, 238, 238);
-}
-
-.icon-color {
-  color: black;
-}
-
-.selected {
-  background-color: rgb(238, 238, 238);
-}
-
-.text-body {
-  height: 200px;
-  border-radius: 10px;
-}
-
-.text-tags {
-  height: 150px;
-  border-radius: 10px;
-}
-
-.analytic-font {
-  font-size: 23px;
-}
-
-.settings-input {
-  height: 60px;
-  border-radius: 10px;
-}
-
-.settings-dropdown {
-  width: 183px;
-}
-
-.check {
-  color: green;
-}
-
-.add-acct-width {
-  width: 162px;
 }
