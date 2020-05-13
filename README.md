@@ -39,7 +39,7 @@ Try the application live at https://art-spread.jwenning.digital/
 * User can reply to publication comments
 
 ## Preview
-![alt text](./images/art-spread.gif)
+![alt text](./images/art-spread-demo.gif)
 
 ## Development
 ### System Requirements
@@ -68,5 +68,6 @@ Try the application live at https://art-spread.jwenning.digital/
 
 ### Additional Notes
 * Publications can be found here: https://www.reddit.com/r/testingground4bots/
+* Due to the limitations of *Reddit*'s API (and/or the testing subreddit in which publications are sent), publications **will not** actually be deleted from the platform itself, only from the *Art Spread* database
 * Measures are in place for keeping the majority of the app accessible despite external API rate limits, in most scenarios you will only be required to wait for approximately 1 minute before features make themselves available again
-* Posting a comment will leave the Reddit API (and all features involving it) unaccessible for 10 minutes, leave that for last!
+* Posting a comment will leave the *Reddit* API (and all features involving it) unaccessible for 10 minutes, leave that for last!
