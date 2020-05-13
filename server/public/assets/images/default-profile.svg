@@ -1,16 +1,3 @@
-<svg width="200" height="200" viewBox="0 0 200 199" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g filter="url(#filter0_d)">
-<path d="M47.5341 185.148C52.9834 167.073 64.3232 152.566 78.654 145.227C61.717 137.22 50 119.978 50 100C50 72.3858 72.3858 50 100 50C127.614 50 150 72.3858 150 100C150 119.978 138.283 137.22 121.346 145.227C135.677 152.566 147.017 167.073 152.466 185.148C137.214 194.565 119.242 200 100 200C80.7583 200 62.786 194.565 47.5341 185.148Z" fill="#494969"/>
-</g>
-<defs>
-<filter id="filter0_d" x="-4" y="0" width="208" height="208" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/>
-<feOffset dy="4"/>
-<feGaussianBlur stdDeviation="2"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
-</filter>
-</defs>
-</svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet" viewBox="0 0 150 150" width="150" height="150"><defs><path d="M112.5 72.66C112.5 93.35 95.7 110.16 75 110.16C54.3 110.16 37.5 93.35 37.5 72.66C37.5 51.96 54.3 35.16 75 35.16C95.7 35.16 112.5 51.96 112.5 72.66Z" id="a4H4FajCi1"></path><path d="M112.5 161.31C112.5 197.19 95.7 226.31 75 226.31C54.3 226.31 37.5 197.19 37.5 161.31C37.5 125.44 54.3 96.31 75 96.31C95.7 96.31 112.5 125.44 112.5 161.31Z" id="b4YAhpLKQ"></path></defs><g><g><g><use xlink:href="#a4H4FajCi1" opacity="1" fill="#494969" fill-opacity="1"></use><g><use xlink:href="#a4H4FajCi1" opacity="1" fill-opacity="0" stroke="#494969" stroke-width="1" stroke-opacity="1"></use></g></g><g><use xlink:href="#b4YAhpLKQ" opacity="1" fill="#494969" fill-opacity="1"></use><g><use xlink:href="#b4YAhpLKQ" opacity="1" fill-opacity="0" stroke="#494969" stroke-width="1" stroke-opacity="1"></use></g></g></g></g></svg>

@@ -1,10 +1,3 @@
-<svg width="160" height="160" viewBox="0 0 170 165" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0)">
-<path d="M-76 220.5L33 76.5L78 130.5L128 55.5L241 220.5H-76Z" fill="#494969"/>
-</g>
-<defs>
-<clipPath id="clip0">
-<rect width="170" height="170" fill="white"/>
-</clipPath>
-</defs>
-</svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet" viewBox="0 0 150 150" width="150" height="150"><defs><path d="M82.02 124.95L126.53 175.86L37.5 175.86L-51.53 175.86L-7.02 124.95L37.5 74.04L82.02 124.95Z" id="bOsfNXy6P"></path><path d="M163.09 96.09L213.67 164.87L112.5 164.87L11.33 164.87L61.91 96.09L112.5 27.32L163.09 96.09Z" id="akK9gWDv9"></path><path d="M71.09 32.81C71.09 46.23 59.89 57.12 46.09 57.12C32.3 57.12 21.09 46.23 21.09 32.81C21.09 19.4 32.3 8.5 46.09 8.5C59.89 8.5 71.09 19.4 71.09 32.81Z" id="aUBNhHt1J"></path></defs><g><g><g><use xlink:href="#bOsfNXy6P" opacity="1" fill="#494969" fill-opacity="1"></use><g><use xlink:href="#bOsfNXy6P" opacity="1" fill-opacity="0" stroke="#494969" stroke-width="1" stroke-opacity="1"></use></g></g><g><use xlink:href="#akK9gWDv9" opacity="1" fill="#494969" fill-opacity="1"></use><g><use xlink:href="#akK9gWDv9" opacity="1" fill-opacity="0" stroke="#494969" stroke-width="1" stroke-opacity="1"></use></g></g><g><use xlink:href="#aUBNhHt1J" opacity="1" fill="#494969" fill-opacity="1"></use><g><use xlink:href="#aUBNhHt1J" opacity="1" fill-opacity="0" stroke="#494969" stroke-width="1" stroke-opacity="1"></use></g></g></g></g></svg>

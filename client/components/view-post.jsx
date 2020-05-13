@@ -1,167 +1,174 @@
 import React from 'react';
-import CommentItem from './comment-item';
-import AnalyticItem from './analytic-item';
 
 export default class ViewPost extends React.Component {
   constructor(props) {
     super(props);
-    this.post = this.props.params.post;
     this.state = {
-      published: this.post.published,
+      isPublished: false,
       analytics: [],
       comments: []
     };
   }
 
-  getPost() {
-    if (this.post.published) {
-      fetch(`/api/post/${this.post.postId}`)
-        .then(res => res.json())
-        .then(data => {
-          this.setState({
-            analytics: data.map(item => item.analytics),
-            comments: data.map(item => item.comments)
-              .flat()
-              .sort((a, b) => a.time - b.time)
-          });
-        });
-    }
+  fetchPublications() {
+    this.props.fetchPublications()
+      .then(data => this.setState({
+        analytics: data.map(item => item.analytics),
+        comments: data.map(item => item.comments).flat()
+      })).catch(err => console.error(err));
   }
 
   publishPost() {
-    fetch(`/api/publish/${this.post.postId}`, {
-      method: 'POST'
-    }).then(() => this.setState({ published: true }))
-      .then(() => setTimeout(() => this.getPost(), 1500))
+    this.props.publishPost()
+      .then(() => {
+        this.props.post.isPublished = true;
+        return this.fetchPublications();
+      }).then(() => this.setState({ isPublished: true }))
       .catch(err => console.error(err));
   }
 
-  deletePost() {
-    fetch(`/api/post/${this.post.postId}`, {
-      method: 'DELETE'
-    }).then(() => {
-      this.props.setView('dashboard', {});
-    })
-      .catch(err => console.error(err));
+  viewComment(comment) {
+    this.props.viewViewComment({ comment, replies: comment.children });
+  }
+
+  toggleLike(e, comment, index) {
+    e.stopPropagation();
+    this.props.toggleLike(comment.accountIndex, comment.id, !comment.liked)
+      .then(() => this.setState(state => {
+        const comment = state.comments[index];
+        comment.liked = !comment.liked;
+        return state;
+      })).catch(err => console.error(err));
   }
 
   componentDidMount() {
-    if (this.state.published) this.getPost();
-  }
-
-  handleClick(commentId) {
-    this.setState(() => {
-      const [...comments] = this.state.comments;
-      const index = comments.findIndex(c =>
-        c.commentId === commentId);
-      comments[index].liked = !comments[index].liked;
-      return comments;
-    });
+    this.setState({ isPublished: this.props.post.isPublished });
+    if (this.props.post.isPublished) {
+      this.fetchPublications();
+    }
   }
 
   render() {
-    const comments = this.state.comments.map(comment => <CommentItem
-      key={comment.time}
-      comment={comment}
-      like={() => this.handleClick(comment.commentId)}
-      setView={() => this.props.setView('viewComments', { comment: comment, post: this.post })}/>);
-    const analytics = this.state.analytics.map(analytic =>
-      <AnalyticItem
-        key={analytic.publicationId}
-        analytic={analytic}
-      />);
-    if (this.state.published) {
-      return (
-        <div>
-          <div className="d-flex justify-content-center">
-            <img
-              className="preview-image-lg"
-              src={this.post.imgPath || './assets/images/default-image.svg'}
-              alt=""/>
-          </div>
-          <div className="container-fluid mt-3 mb-3 ml-1 mr-1">
-            <div className="horizontal-list overflow-auto row row-horizon flex-row
-          flex-nowrap align-items-center justify-content-around">
-              {analytics}
-            </div>
-          </div>
-          <div className="w-100">
-            <div className="text-plate p-2 text-custom-primary ml-1 mb-1 mt-1">
-              {this.post.title}
-            </div>
-          </div>
-          {
-            !!this.post.body &&
-          <div className="w-100 mt-3 mb-3">
-            <div className="text-plate p-2 text-custom-primary ml-1 mb-1 mt-1">
-              {this.post.body}
-            </div>
-          </div>
-          }
-          {
-            !!this.post.tags &&
-          <div className="w-100 mt-3 mb-3">
-            <div className="text-plate p-2 text-primary ml-1 mb-1 mt-1">
-              {this.post.tags.replace(/#/g, ' #')}
-            </div>
-          </div>
-          }
-          <div className="list overflow-auto">
-            {comments}
-          </div>
-          <div className="mt-2 d-flex flex-row w-100 justify-content-center">
-            <button onClick={() => this.deletePost()} className="btn btn-custom text-custom-primary">
-            Delete post
-            </button>
-          </div>
+    const analytics = this.state.analytics.map((item, index) => (
+      <div
+        key={index}
+        title={item.account}
+        className={index === this.state.analytics.length - 1 ? 'pr-3' : 'mr-4'}>
+        <div className="d-flex align-items-center text-primary">
+          <h2 className="mb-0">
+            <i className={`fab fa-${item.platform} mr-2`}/>
+            <i className="fas fa-heart mr-1"/>
+            {item.likes}
+          </h2>
         </div>
-      );
-    } else {
-      return (
-        <div>
-          <div className="d-flex justify-content-center">
-            <img
-              className="preview-image-lg"
-              src={this.post.imgPath || './assets/images/default-image.svg'}
-              alt="" />
-          </div>
-          <div className="container-fluid mt-3 mb-3 ml-1 mr-1">
-            <div className="horizontal-list overflow-auto row row-horizon flex-row
-          flex-nowrap align-items-center justify-content-around">
-              Not published
-            </div>
-          </div>
-          <div className="w-100">
-            <div className="text-plate p-2 text-custom-primary ml-1 mb-1 mt-1">
-              {this.post.title}
-            </div>
-          </div>
-          {
-            !!this.post.body &&
-            <div className="w-100 mt-3 mb-3">
-              <div className="text-plate p-2 text-custom-primary ml-1 mb-1 mt-1">
-                {this.post.body}
+      </div>
+    ));
+    const comments = this.state.comments
+      .sort((a, b) => b.created - a.created)
+      .map((item, index) => (
+        <a
+          onClick={() => this.viewComment(item)}
+          key={index}>
+          <div className="col-12 mb-5">
+            <div className="row">
+              <div className="col">
+                <p
+                  className="col-12 rounded bg-primary text-truncate text-primary p-3">
+                  {item.handle}
+                </p>
               </div>
+              <button
+                onClick={e => this.toggleLike(e, item, index)}
+                type="button"
+                className="btn btn-custom-menu border-0 mr-3">
+                <i className={item.liked ? 'fas fa-heart text-primary' : 'far fa-heart text-secondary'} />
+              </button>
             </div>
-          }
-          {
-            !!this.post.tags &&
-            <div className="w-100 mt-3 mb-3">
-              <div className="text-plate p-2 text-primary ml-1 mb-1 mt-1">
-                {this.post.tags.replace(/#/g, ' #')}
-              </div>
-            </div>
-          }
-          <div className="mt-2 d-flex flex-row w-100 justify-content-around">
-            <button onClick={() => this.publishPost()} className="btn btn-custom text-custom-primary">
-              Publish post
-            </button>
-            <button onClick={() => this.deletePost()} className="btn btn-custom text-custom-primary">
-              Delete post
-            </button>
+            <p
+              className="col-12 rounded bg-primary text-primary p-3">
+              {item.body}
+            </p>
           </div>
+        </a>
+      ));
+    return (
+      <div className="view-post container">
+        <div className="col-12 text-center bg-dark">
+          <img
+            src={ this.props.post.imgPath || '/assets/images/default-image.svg'}
+            alt=""
+            className="col-8 py-1"/>
         </div>
-      );
-    }
+        {this.state.isPublished && (
+          <div className="col-12 d-flex overflow-auto bg-secondary text-nowrap p-3 mt-3">
+            {analytics}
+          </div>
+        )}
+        <h3 className="text-primary text-capitalize mt-3">title</h3>
+        <p
+          className="col-12 rounded border-secondary bg-primary text-primary p-3">
+          {
+            this.props.post.title ||
+           <span className="col-12 d-block text-center text-capitalize">
+             &lt;no title&gt;
+           </span>
+          }
+        </p>
+        <h3 className="text-primary text-capitalize mt-2">body</h3>
+        <p
+          className="col-12 rounded border-secondary bg-primary text-primary p-3">
+          {
+            this.props.post.body ||
+           <span className="col-12 d-block text-center text-capitalize">
+             &lt;no body&gt;
+           </span>}
+        </p>
+        <h3 className="text-primary text-capitalize mt-2">tags</h3>
+        <p
+          className="col-12 rounded border-secondary bg-primary text-secondary p-3">
+          {
+            this.props.post.tags ||
+            <span
+              className="col-12 d-block text-center text-capitalize">
+            &lt;no tags&gt;
+            </span>
+          }
+        </p>
+        <h3 className="text-primary text-capitalize mt-2">comments</h3>
+        {this.state.isPublished && (
+          <div className="vh-60 overflow-auto bg-secondary py-4 mt-2">
+            {comments.length
+              ? comments
+              : (
+                <div className="col-12">
+                  <p
+                    className="bg-primary rounded text-primary text-center text-capitalize py-2">
+                  no comments
+                  </p>
+                </div>
+              )}
+          </div>
+        )}
+        <div className="text-center">
+          {!this.state.isPublished && this.props.canPublish && (
+            <div>
+              <button
+                onClick={() => this.publishPost()}
+                type="button"
+                className="btn btn-custom text-capitalize mt-2">
+                publish
+              </button>
+              <br />
+            </div>
+          )}
+          <button
+            onClick={() => this.props.deletePost()}
+            type="button"
+            className="btn btn-custom text-capitalize mt-2">
+            delete
+          </button>
+        </div>
+      </div>
+    );
   }
 }

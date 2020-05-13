@@ -1,183 +1,169 @@
 import React from 'react';
-import PostPreview from './post-preview';
 
 export default class Dashboard extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      profile: {
-        picture: null,
-        name: null
-      },
-      switch: true,
-      publishedPosts: [],
-      unpublishedPosts: []
-    };
-    this.goToCreatePost = this.goToCreatePost.bind(this);
-    this.goToSettings = this.goToSettings.bind(this);
-    this.goToSwitchProfile = this.goToSwitchProfile.bind(this);
-    this.pendingPost = this.pendingPost.bind(this);
-    this.alreadyPosted = this.alreadyPosted.bind(this);
-    this.goToViewPost = this.goToViewPost.bind(this);
-    this.goToModifyProfile = this.goToModifyProfile.bind(this);
+    this.state = { viewingPublished: true };
   }
 
-  getProfile() {
-    fetch('/api/profiles')
-      .then(res => res.json())
-      .then(data => {
-        this.setState({ profile: data });
-      });
+  viewViewPost(index) {
+    this.props.fetchAccounts()
+      .then(data => this.props.viewViewPost({
+        post: this.props.posts[index],
+        index,
+        canPublish: !!data.filter(item => item.isLinked).length
+      })).catch(err => console.error(err));
   }
 
-  getPosts() {
-    fetch('/api/posts?postId=1&postCount=10')
-      .then(res => res.json())
-      .then(data => this.setState({
-        publishedPosts: data.filter(item => item.published),
-        unpublishedPosts: data.filter(item => !item.published)
-      }));
+  createPostRender(item, index) {
+    return (
+      <div
+        onClick={() => this.viewViewPost(index)}
+        key={index}
+        className="post col-12 px-0 mb-2">
+        <div className="row d-flex align-items-center px-0 m-0">
+          <div className="pl-2 pr-1">
+            <img
+              src={item.imgPath || '/assets/images/default-image.svg'}
+              alt=""
+              className="img-window border border-secondary bg-primary" />
+          </div>
+          <div className="col text-truncate pl-1 pr-2">
+            <p
+              className="col-12 rounded bg-primary text-truncate text-primary p-1 my-1">
+              {item.title || <span className="text-capitalize">&lt;no title&gt;</span>}
+            </p>
+            <p
+              className="col-12 rounded bg-primary text-truncate text-primary p-1 my-1">
+              {item.body || <span className="text-capitalize">&lt;no body&gt;</span>}
+            </p>
+            <p
+              className="col-12 rounded bg-primary text-truncate text-secondary p-1 my-1">
+              {item.tags || <span className="text-capitalize">&lt;no tags&gt;</span>}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   componentDidMount() {
-    this.getProfile();
-    this.getPosts();
-  }
-
-  goToCreatePost() {
-    this.props.setView('createPost', {});
-  }
-
-  goToSettings() {
-    this.props.setView('settings', {});
-  }
-
-  goToSwitchProfile() {
-    this.props.setView('switchProfile', {});
-  }
-
-  goToViewPost(post) {
-    this.props.setView('viewPost', { post });
-  }
-
-  goToModifyProfile() {
-    this.props.setView('modifyProfile', {});
-  }
-
-  pendingPost() {
-    this.setState({
-      switch: false
-    });
-  }
-
-  alreadyPosted() {
-    this.setState({
-      switch: true
-    });
+    this.props.fetchPosts();
   }
 
   render() {
-    const pfp = this.state.profile.picture || './assets/images/default-profile.svg';
-    const pfn = this.state.profile.name || 'profile';
-    const posts = this.state.publishedPosts.map(post =>
-      <PostPreview
-        key={post.postId}
-        post={post}
-        pending={false}
-        viewPost={() => this.goToViewPost(post)}/>
+    let hasNoPubs = true;
+    let hasNoPosts = true;
+    const defaultPfp = '/assets/images/default-profile.svg';
+    const publications = this.props.posts.map((item, index) => {
+      if (item.isPublished) {
+        hasNoPubs = false;
+        return this.createPostRender(item, index);
+      }
+    }).sort(() => -1);
+    const savedPosts = this.props.posts.map((item, index) => {
+      if (!item.isPublished) {
+        hasNoPosts = false;
+        return this.createPostRender(item, index);
+      }
+    }).sort(() => -1);
+    return (
+      <div className="dashboard container text-center">
+        <div className="row">
+          <div className="col-6">
+            <a
+              onClick={this.props.viewModifyProfile}
+              className="btn btn-custom text-capitalize d-flex justify-content-center align-items-center mt-2">
+              modify profile
+            </a>
+            <a
+              onClick={this.props.viewSwitchProfile}
+              className="btn btn-custom text-capitalize d-flex justify-content-center align-items-center mt-4">
+              switch profile
+            </a>
+            <a
+              onClick={this.props.viewCreatePost}
+              className="btn btn-custom text-capitalize d-flex justify-content-center align-items-center mt-4">
+              create post
+            </a>
+          </div>
+          <div className="col-6">
+            <img
+              src={this.props.profile ? this.props.profile.imgPath || defaultPfp : defaultPfp}
+              alt=""
+              className="img-window border rounded-circle border-secondary bg-primary"/>
+            <h4 className="text-primary mt-2 text-truncate">
+              {this.props.profile ? this.props.profile.name || 'profile' : 'profile'}
+            </h4>
+            <div className="d-flex justify-content-end">
+              <a
+                onClick={this.props.viewSettings}
+                className="btn btn-custom-menu d-flex justify-content-center align-items-center mr-3">
+                <i className="fas fa-cog"/>
+              </a>
+            </div>
+          </div>
+        </div>
+        <ul className="nav nav-tabs mt-3" role="tablist">
+          <li className="nav-item bg-primary">
+            <button
+              className="nav-link text-primary text-capitalize active"
+              id="publications-tab"
+              data-toggle="tab"
+              href="#publications"
+              role="tab"
+              aria-controls="publications"
+              aria-selected="true">
+                publications
+            </button>
+          </li>
+          <li className="nav-item bg-primary">
+            <button
+              className="nav-link text-primary text-capitalize"
+              id="saved-posts-tab"
+              data-toggle="tab"
+              href="#saved-posts"
+              role="tab"
+              aria-controls="saved-posts"
+              aria-selected="false">
+                saved posts
+            </button>
+          </li>
+        </ul>
+        <div className="tab-content bg-secondary">
+          <div
+            className="tab-pane fade vh-60 overflow-auto show active py-4"
+            id="publications"
+            role="tabpanel"
+            aria-labelledby="publications-tab">
+            {publications}
+            {hasNoPubs && (
+              <div className="col-12">
+                <p
+                  className="bg-primary rounded text-primary text-capitalize py-2">
+                  no publications
+                </p>
+              </div>
+            )}
+            <div className="col-12">&nbsp;</div>
+          </div>
+          <div
+            className="tab-pane fade vh-60 overflow-auto py-4"
+            id="saved-posts"
+            role="tabpanel"
+            aria-labelledby="saved-posts">
+            {savedPosts}
+            {hasNoPosts && (
+              <div className="col-12">
+                <p
+                  className="bg-primary rounded text-primary text-capitalize py-2">
+                  no posts
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     );
-    const pendingPosts = this.state.unpublishedPosts.map(post =>
-      <PostPreview
-        key={post.postId}
-        post={post}
-        pending={true}
-        viewPost={() => this.goToViewPost(post)}/>);
-
-    if (this.state.switch) {
-      return (
-        <div>
-          <div className="row">
-            <div className="col-7">
-              <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
-                <button onClick={this.goToModifyProfile} className="col btn btn-custom text-custom-primary mb-4">Modify Profile</button>
-                <button onClick={this.goToSwitchProfile} className="col btn btn-custom text-custom-primary mb-4">Switch Profile</button>
-                <button onClick={this.goToCreatePost} className="col btn btn-custom text-custom-primary mb-4">Create Post</button>
-              </div>
-            </div>
-            <div className="col-5">
-              <div className="col d-flex justify-content-center">
-                <img className="profile-picture" src={pfp} alt="" />
-              </div>
-              <h2 className="col text-center text-custom-primary">{pfn}</h2>
-              <div className="pr-0 ml-0 col row flex-row-reverse">
-                <button onClick={this.goToSettings} className="btn btn-custom">
-                  <i className="fas fa-cog fa-2x text-custom-secondary" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <ul className="ml-3 nav nav-pills">
-              <li className="nav-item">
-                <a className="nav-link selected" onClick={this.alreadyPosted}>Posts</a>
-              </li>
-              <li className="nav-item text-custom-primary">
-                <a className="nav-link" onClick={this.pendingPost}>Pending Posts</a>
-              </li>
-            </ul>
-          </div>
-          <div className="list overflow-auto">
-            {posts}
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <div className="row">
-            <div className="col-7">
-              <div className="pl-0 col col-sm-8 col-md-6 col-lg-5">
-                <button onClick={this.goToModifyProfile} className="col btn btn-custom text-custom-primary mb-4">
-                  Modify Profile
-                </button>
-                <button className="col btn btn-custom text-custom-primary mb-4">
-                  Switch Profile
-                </button>
-                <button
-                  onClick={this.goToCreatePost}
-                  className="col btn btn-custom text-custom-primary mb-4"
-                >
-                  Create Post
-                </button>
-              </div>
-            </div>
-            <div className="col-5">
-              <div className="col d-flex justify-content-center">
-                <img className="profile-picture" src={pfp} alt="" />
-              </div>
-              <h2 className="col text-center text-custom-primary">{pfn}</h2>
-              <div className="pr-0 ml-0 col row flex-row-reverse">
-                <button onClick={this.goToSettings} className="btn btn-custom">
-                  <i className="fas fa-cog fa-2x text-custom-secondary" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <ul className="ml-3 nav nav-pills">
-              <li className="nav-item text-custom-primary">
-                <a className="nav-link" onClick={this.alreadyPosted}>Posts</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link selected" onClick={this.pendingPost}>Pending Posts</a>
-              </li>
-            </ul>
-          </div>
-          <div className="list overflow-auto">{pendingPosts}</div>
-        </div>
-      );
-    }
   }
 }

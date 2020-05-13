@@ -16,19 +16,20 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+ALTER TABLE ONLY public.publications DROP CONSTRAINT publications_fk1;
+ALTER TABLE ONLY public.publications DROP CONSTRAINT publications_fk0;
 ALTER TABLE ONLY public.profiles DROP CONSTRAINT profiles_fk0;
+ALTER TABLE ONLY public.posts DROP CONSTRAINT posts_fk0;
 ALTER TABLE ONLY public.accounts DROP CONSTRAINT accounts_fk0;
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "account-profile-links_fk1";
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "account-profile-links_fk0";
 ALTER TABLE ONLY public.users DROP CONSTRAINT users_username_key;
 ALTER TABLE ONLY public.users DROP CONSTRAINT users_pk;
-ALTER TABLE ONLY public.users DROP CONSTRAINT users_password_key;
 ALTER TABLE ONLY public.accounts DROP CONSTRAINT "unique-accounts";
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "unique-account-profile-links";
 ALTER TABLE ONLY public.publications DROP CONSTRAINT publications_pk;
 ALTER TABLE ONLY public.profiles DROP CONSTRAINT profiles_pk;
 ALTER TABLE ONLY public.posts DROP CONSTRAINT posts_pk;
-ALTER TABLE ONLY public.posts DROP CONSTRAINT "posts_imgPath_key";
 ALTER TABLE ONLY public.accounts DROP CONSTRAINT accounts_pk;
 ALTER TABLE ONLY public."account-profile-links" DROP CONSTRAINT "account-profile-links_pk";
 ALTER TABLE public.users ALTER COLUMN "userId" DROP DEFAULT;
@@ -124,7 +125,7 @@ CREATE TABLE public.accounts (
     name character varying(255) NOT NULL,
     access character varying(255) NOT NULL,
     refresh character varying(255),
-    expiration character varying(255) NOT NULL,
+    expiration character varying(255),
     "userId" integer NOT NULL
 );
 
@@ -155,11 +156,12 @@ ALTER SEQUENCE public."accounts_accountId_seq" OWNED BY public.accounts."account
 
 CREATE TABLE public.posts (
     "postId" integer NOT NULL,
-    title character varying(255) NOT NULL,
-    "imgPath" character varying(255) NOT NULL,
+    "imgPath" character varying(255),
+    title character varying(255),
     body character varying(255),
     tags character varying(255),
-    "profileId" integer NOT NULL
+    "profileId" integer NOT NULL,
+    CONSTRAINT "well-formed-posts" CHECK ((("imgPath" IS NOT NULL) OR ((title IS NOT NULL) AND (body IS NOT NULL))))
 );
 
 
@@ -190,6 +192,7 @@ ALTER SEQUENCE public."posts_postId_seq" OWNED BY public.posts."postId";
 CREATE TABLE public.profiles (
     "profileId" integer NOT NULL,
     name character varying(255) NOT NULL,
+    bio character varying(255),
     "imgPath" character varying(255),
     "userId" integer NOT NULL
 );
@@ -325,8 +328,8 @@ ALTER TABLE ONLY public.users ALTER COLUMN "userId" SET DEFAULT nextval('public.
 --
 
 COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM stdin;
-1	1	1
-2	2	1
+12	3	12
+15	4	12
 \.
 
 
@@ -335,8 +338,8 @@ COPY public."account-profile-links" ("linkId", "accountId", "profileId") FROM st
 --
 
 COPY public.accounts ("accountId", type, name, access, refresh, expiration, "userId") FROM stdin;
-1	reddit	Art_Spread	466923361867-CptvDtXu8-4t3FuPoo3L1KXhTuk	466923361867-Ct7XgALceGaz4sB-QAyT7E5BJKg	1585601014225	1
-2	reddit	Art_Spread_	472782679034-zv0KQNMzLfMfaKIKBScTGRrVYRI	472782679034-wD4pysspR1Z_euBXI4rhMvzgsus	1585601014443	1
+4	reddit	Art_Spread_	472782679034-Q8Kqfkiv-x6nmpHXzaVFgs-Oa2s	472782679034-RR0JSc6FAsMqK5nHVEt9VzXSf2Y	1589322144208	1
+3	reddit	Art_Spread	466923361867-J6N1Ptqsj2Wg2YyfvRTJ7oK4qNA	466923361867-qCkzH0_lUWaitolSGuYPrZMLqXI	1589322144209	1
 \.
 
 
@@ -344,11 +347,10 @@ COPY public.accounts ("accountId", type, name, access, refresh, expiration, "use
 -- Data for Name: posts; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.posts ("postId", title, "imgPath", body, tags, "profileId") FROM stdin;
-2	A Masterpiece	/images/1585271031909-1-436.png	Like forreal just check out how good I am at drawing.	#lit#sick#amazing	1
-3	And here's another example.	/images/1585271445187-1-566.png	This time I won't include tags.	\N	1
-4	Like yo I'm so cool.	/images/1585271841388-1-908.png	\N	#tagless#cool#nice	1
-7	Doing some more testing	/images/1585596578038-1-772.png	And then we've got all this text up here in the body bois.  It's pretty sick.	#blessed	1
+COPY public.posts ("postId", "imgPath", title, body, tags, "profileId") FROM stdin;
+27	/images/dW5kZWZpbmVkLTE1ODkwMDIxMjI3MjA=.png	properly working	[insert thinking emoji here]		12
+33	/images/dW5kZWZpbmVkLTE1ODkzMTg4Mzk0NDQ=.png				12
+34		a new test	for testing purposes		12
 \.
 
 
@@ -356,8 +358,8 @@ COPY public.posts ("postId", title, "imgPath", body, tags, "profileId") FROM std
 -- Data for Name: profiles; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-COPY public.profiles ("profileId", name, "imgPath", "userId") FROM stdin;
-1	reddit-test	\N	1
+COPY public.profiles ("profileId", name, bio, "imgPath", "userId") FROM stdin;
+12	test profile 1	\N	\N	1
 \.
 
 
@@ -366,10 +368,12 @@ COPY public.profiles ("profileId", name, "imgPath", "userId") FROM stdin;
 --
 
 COPY public.publications ("publicationId", url, "accountId", "postId") FROM stdin;
-3	https://www.reddit.com/r/testingground4bots/comments/fqc1ps/a_masterpiece/	1	2
-4	https://www.reddit.com/r/testingground4bots/comments/fqc1pr/a_masterpiece/	2	2
-5	https://www.reddit.com/r/testingground4bots/comments/frxpf7/doing_some_more_testing/	1	7
-6	https://www.reddit.com/r/testingground4bots/comments/frxpf9/doing_some_more_testing/	2	7
+5	https://www.reddit.com/r/testingground4bots/comments/gg9l0v/properly_working/	4	27
+6	https://www.reddit.com/r/testingground4bots/comments/gg9l0w/properly_working/	3	27
+13	https://www.reddit.com/r/testingground4bots/comments/gil28g/httpsiimgurcomgd4ztv9png/	3	33
+14	https://www.reddit.com/r/testingground4bots/comments/gil28h/httpsiimgurcomgd4ztv9png/	4	33
+15	https://www.reddit.com/r/testingground4bots/comments/gilbgi/a_new_test/	4	34
+16	https://www.reddit.com/r/testingground4bots/comments/gilbgj/a_new_test/	3	34
 \.
 
 
@@ -378,7 +382,9 @@ COPY public.publications ("publicationId", url, "accountId", "postId") FROM stdi
 --
 
 COPY public.users ("userId", username, password) FROM stdin;
-1	admin	admin
+1	user1	Password123!
+2	user2	Password123!
+3	user3	Password123!
 \.
 
 
@@ -386,7 +392,7 @@ COPY public.users ("userId", username, password) FROM stdin;
 -- Name: account-profile-links_linkId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 4, true);
+SELECT pg_catalog.setval('public."account-profile-links_linkId_seq"', 15, true);
 
 
 --
@@ -400,28 +406,28 @@ SELECT pg_catalog.setval('public."accounts_accountId_seq"', 4, true);
 -- Name: posts_postId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."posts_postId_seq"', 7, true);
+SELECT pg_catalog.setval('public."posts_postId_seq"', 35, true);
 
 
 --
 -- Name: profiles_profileId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."profiles_profileId_seq"', 1, true);
+SELECT pg_catalog.setval('public."profiles_profileId_seq"', 12, true);
 
 
 --
 -- Name: publications_publicationId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."publications_publicationId_seq"', 6, true);
+SELECT pg_catalog.setval('public."publications_publicationId_seq"', 18, true);
 
 
 --
 -- Name: users_userId_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public."users_userId_seq"', 1, true);
+SELECT pg_catalog.setval('public."users_userId_seq"', 3, true);
 
 
 --
@@ -438,14 +444,6 @@ ALTER TABLE ONLY public."account-profile-links"
 
 ALTER TABLE ONLY public.accounts
     ADD CONSTRAINT accounts_pk PRIMARY KEY ("accountId");
-
-
---
--- Name: posts posts_imgPath_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.posts
-    ADD CONSTRAINT "posts_imgPath_key" UNIQUE ("imgPath");
 
 
 --
@@ -489,14 +487,6 @@ ALTER TABLE ONLY public.accounts
 
 
 --
--- Name: users users_password_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_password_key UNIQUE (password);
-
-
---
 -- Name: users users_pk; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -517,7 +507,7 @@ ALTER TABLE ONLY public.users
 --
 
 ALTER TABLE ONLY public."account-profile-links"
-    ADD CONSTRAINT "account-profile-links_fk0" FOREIGN KEY ("accountId") REFERENCES public.accounts("accountId");
+    ADD CONSTRAINT "account-profile-links_fk0" FOREIGN KEY ("accountId") REFERENCES public.accounts("accountId") ON DELETE CASCADE;
 
 
 --
@@ -525,7 +515,7 @@ ALTER TABLE ONLY public."account-profile-links"
 --
 
 ALTER TABLE ONLY public."account-profile-links"
-    ADD CONSTRAINT "account-profile-links_fk1" FOREIGN KEY ("profileId") REFERENCES public.profiles("profileId");
+    ADD CONSTRAINT "account-profile-links_fk1" FOREIGN KEY ("profileId") REFERENCES public.profiles("profileId") ON DELETE CASCADE;
 
 
 --
@@ -533,7 +523,15 @@ ALTER TABLE ONLY public."account-profile-links"
 --
 
 ALTER TABLE ONLY public.accounts
-    ADD CONSTRAINT accounts_fk0 FOREIGN KEY ("userId") REFERENCES public.users("userId");
+    ADD CONSTRAINT accounts_fk0 FOREIGN KEY ("userId") REFERENCES public.users("userId") ON DELETE CASCADE;
+
+
+--
+-- Name: posts posts_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.posts
+    ADD CONSTRAINT posts_fk0 FOREIGN KEY ("profileId") REFERENCES public.profiles("profileId");
 
 
 --
@@ -542,6 +540,22 @@ ALTER TABLE ONLY public.accounts
 
 ALTER TABLE ONLY public.profiles
     ADD CONSTRAINT profiles_fk0 FOREIGN KEY ("userId") REFERENCES public.users("userId");
+
+
+--
+-- Name: publications publications_fk0; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.publications
+    ADD CONSTRAINT publications_fk0 FOREIGN KEY ("accountId") REFERENCES public.accounts("accountId") ON DELETE CASCADE;
+
+
+--
+-- Name: publications publications_fk1; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.publications
+    ADD CONSTRAINT publications_fk1 FOREIGN KEY ("postId") REFERENCES public.posts("postId") ON DELETE CASCADE;
 
 
 --

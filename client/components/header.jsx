@@ -1,34 +1,20 @@
 import React from 'react';
 
 export default class Header extends React.Component {
-  constructor(props) {
-    super(props);
-    this.goToDashboard = this.goToDashboard.bind(this);
-    this.goToLogin = this.goToLogin.bind(this);
-  }
-
-  goToDashboard(event) {
-    this.props.setView('dashboard', {});
-  }
-
-  goToLogin(event) {
-    this.props.setView('login', {});
-  }
-
   render() {
-    const actionIcon = this.props.title === 'dashboard'
-      ? <i onClick={this.goToLogin} className="fas fa-sign-out-alt fa-2x" />
-      : <i onClick={this.goToDashboard} className="fas fa-arrow-left fa-2x" />;
+    const icon = this.props.name === 'dashboard'
+      ? <i className="fas fa-sign-out-alt"/>
+      : <i className="fas fa-arrow-left"/>;
     return (
-      <div className="header navbar mb-3">
-        <h1 className="navbar-brand text-capitalize text-custom-primary mt-3 pb-0">
-          {
-            this.props.title.replace(/[A-Z]/g, a => ' ' + a)
-          }
+      <div className="header navbar text-capitalize border-bottom border-primary mb-4">
+        <h1 className="mb-0 mt-3">
+          {this.props.name}
         </h1>
-        <button className="btn btn-custom btn-action text-custom-secondary" type="button">
-          {actionIcon}
-        </button>
+        <a
+          onClick={this.props.popView}
+          className="btn btn-custom-menu d-flex justify-content-center align-items-center">
+          {icon}
+        </a>
       </div>
     );
   }
